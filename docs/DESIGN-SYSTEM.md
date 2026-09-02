@@ -14,7 +14,9 @@ alignment to a grid. Detail pages set metadata at ~11 px against full-bleed medi
 
 **big.dk** — a single centred media column roughly 310 px wide on desktop with enormous
 surrounding whitespace, right-aligned labels in the left gutter. Uppercase, letter-spaced
-secondary text. Black and white only; all colour comes from the photography.
+secondary text — we take the spacing and the size and leave the uppercasing to whoever
+types the words, for the reason in §3. Black and white only; all colour comes from the
+photography.
 
 **sanaa.co.jp** — an almost empty page. The lesson isn't a technique, it's a budget: the
 homepage gets a logo, a short list of links, and nothing else.
@@ -139,7 +141,7 @@ seventh role and no ad-hoc `font-size` anywhere.
 | `body` | `clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)` | 1.62 | 0 | 400 | Prose |
 | `index` | `0.8125rem` (13px) | 1.7 | 0 | 400 | The works list rows — fixed, not fluid |
 | `meta` | `0.6875rem` (11px) | 1.55 | 0.01em | 400 | Credits, status, captions |
-| `label` | `0.6875rem` (11px) | 1 | 0.09em, uppercase | 500 | Nav, gutter labels, buttons, the home statement |
+| `label` | `0.6875rem` (11px) | 1 | 0.09em | 500 | Nav, gutter labels, buttons, the home statement |
 
 `index` and `meta` stay fixed rather than fluid: at these sizes fluid scaling either breaks
 the 44 px touch floor on mobile or bloats absurdly at 2560 px. They step once at the `sm`
@@ -152,6 +154,14 @@ conditional on them clearing the contrast rule in §10.
 
 CJK adjustment: Chinese needs more leading and no negative tracking. `:lang(zh)` raises
 `line-height` by 0.12 on every role and zeroes `letter-spacing` on `display`/`title`.
+
+**No role applies a `text-transform`, and `label` is the one that had to lose it.** It was
+set in capitals to borrow big.dk's gutter labelling, and the borrowing was one step too
+literal: every string a label renders — a nav item, a section heading, the home statement —
+is typed into CAFA-Admin, so the transform made the page disagree with the record and gave
+the studio no way to write a lower-case title, or a name that is only capitalised in one
+place. Case is content. The tracking and the size are what make a label read as one; those
+stay, and anything meant to be shouted is typed that way.
 
 ---
 

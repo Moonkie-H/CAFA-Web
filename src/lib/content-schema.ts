@@ -33,6 +33,7 @@ import {
   type PageText,
   type Program,
   type ProgramsPage,
+  type Project,
   type SiteContent,
   type SitePages,
   type Work,
@@ -232,6 +233,35 @@ function parseMentors(value: unknown): Mentor[] {
   });
 }
 
+/**
+ * The projects, in the order they are read across About.
+ *
+ * No minimum, and that is the one thing worth saying about this function. The
+ * collection starts empty — seeding it from the works would reproduce the
+ * confusion it exists to end — and an empty one is a shorter About page rather
+ * than a malformed bundle, so it is `each` and not `some`. What the page does
+ * with that is ProjectGrid's, not this gate's.
+ *
+ * A project's slug is not a URL segment; it is checked all the same, because it
+ * keys the grid and files the photograph, and both want it stable and legible.
+ */
+function parseProjects(value: unknown): Project[] {
+  const found = each(value, 'projects', (item, at) => {
+    const record = object(item, at);
+    return {
+      slug: slug(record.slug, `${at}.slug`),
+      title: localised(record.title, `${at}.title`),
+      summary: localised(record.summary, `${at}.summary`),
+      image: image(record.image, `${at}.image`),
+    };
+  });
+  unique(
+    found.map((entry) => entry.slug),
+    'projects',
+  );
+  return found;
+}
+
 /** The two lines every page carries. */
 function pageText(record: Record<string, unknown>, at: string): PageText {
   return {
@@ -423,6 +453,7 @@ export interface ContentBundle {
   works: Work[];
   programs: Program[];
   mentors: Mentor[];
+  projects: Project[];
   dictionaries: Record<Locale, Dictionary>;
 }
 
@@ -444,6 +475,7 @@ export function parseBundle(value: unknown): ContentBundle {
     works: parseWorks(record.works),
     programs: parsePrograms(record.programs),
     mentors: parseMentors(record.mentors),
+    projects: parseProjects(record.projects),
     dictionaries: {
       zh: parseDictionary(dictionaries.zh, 'zh'),
       en: parseDictionary(dictionaries.en, 'en'),

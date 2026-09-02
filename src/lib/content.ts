@@ -9,6 +9,7 @@ import type {
   NavItem,
   PageKey,
   Program,
+  Project,
   SiteContent,
   SitePages,
   Work,
@@ -35,6 +36,7 @@ const pages: SitePages = content.pages;
 const works: readonly Work[] = content.works;
 const programs: readonly Program[] = content.programs;
 const mentors: readonly Mentor[] = content.mentors;
+const projects: readonly Project[] = content.projects;
 const dictionaries: Record<Locale, Dictionary> = content.dictionaries;
 
 function isLocale(value: string): value is Locale {
@@ -115,19 +117,6 @@ export function getWorkListings(): readonly WorkListing[] {
   return listings;
 }
 
-/**
- * The same listings, minus the works that publish no cover.
- *
- * A row can carry a private work — a number, a title, and no link — but a card
- * cannot: it is a photograph with a name under it, so a private work would be a
- * hole in the grid. The filter lives here rather than in the page, because
- * "which works may be shown as pictures" is a question about the content, and
- * pages assemble rather than decide (CLAUDE.md §3).
- */
-export function getPublishedWorkListings(): readonly WorkListing[] {
-  return listings.filter((work) => work.status !== 'private');
-}
-
 /** The works that have a page of their own. A private work is listed, not opened. */
 export function getPublishedWorks(): readonly Work[] {
   return works.filter((work) => work.status !== 'private');
@@ -174,4 +163,16 @@ export function getPrograms(): readonly Program[] {
 
 export function getMentors(): readonly Mentor[] {
   return mentors;
+}
+
+/**
+ * The projects, in the order the studio put them in.
+ *
+ * No filter, unlike the works: a project has no status to be private under, so
+ * every record here is one somebody wrote in order to show it. May be empty,
+ * which is a shorter About page rather than an empty state — ProjectGrid draws
+ * no section at all rather than a heading over nothing.
+ */
+export function getProjects(): readonly Project[] {
+  return projects;
 }

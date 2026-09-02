@@ -17,31 +17,22 @@
   padding: 0;
 }
 
-/* The whole card is the target — DESIGN-SYSTEM.md §7 wants one hit area per
-   destination, not a title that is a link beside a photograph that is not. */
+/* A figure carries a browser margin. The card is placed by the grid, so it has
+   none of its own to keep. */
 .card {
-  color: inherit;
-  display: block;
-  text-decoration: none;
+  margin: 0;
 }
 
-.cover {
+.picture {
   margin-block-end: var(--space-s);
 }
 
-/* The particulars on one line, wrapping to two in a narrow column: what it is,
-   then when. The year is pushed to the end so a scan down the grid reads a
-   column of years however many disciplines a project carries. */
-.meta {
+/* The line under the name. It is a caption rather than prose — one or two lines
+   about a picture that is already on screen — so it takes the caption role's
+   colour and sits close under the title. */
+.summary {
   color: var(--c-ink-70);
-  column-gap: var(--space-2xs);
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.year {
-  color: var(--c-ink-62);
-  margin-inline-start: auto;
+  margin-block-start: var(--space-3xs);
 }
 
 /*

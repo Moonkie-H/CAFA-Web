@@ -114,13 +114,13 @@ export const scenes = {
    * `unmask`) is safe on a ranged trigger; the two symmetric effects, `focus`
    * and `drift`, only ever belong on `scrub`, which runs the whole pass.
    *
-   * The covers still focus — see workCardCover, which nests a scrub inside each
-   * card. That is the composition the effect vocabulary is built for, and it is
+   * The pictures still focus — see projectCardCover, which nests a scrub inside
+   * each card. That is the composition the effect vocabulary is built for, and it is
    * what the §5.5 audit's "focus d1" was actually asking for.
    */
-  workCards: { kind: 'batch', effect: 'rise', depth: 1 },
-  /** And the cover inside each card, on its own continuous pass. */
-  workCardCover: { kind: 'scrub', effect: 'focus', depth: 1 },
+  projectCards: { kind: 'batch', effect: 'rise', depth: 1 },
+  /** And the picture inside each card, on its own continuous pass. */
+  projectCardCover: { kind: 'scrub', effect: 'focus', depth: 1 },
   /*
    * Contact had a scene here — `scrub` + `sway`, a card pinned at its top edge
    * turning a fraction of a degree as the page moved under it. It went with the

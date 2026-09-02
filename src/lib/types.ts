@@ -75,6 +75,31 @@ export interface Mentor {
 }
 
 /**
+ * A project: a picture, a name, and a line or two about it.
+ *
+ * The smallest record in the bundle, and its smallness is the point. About used
+ * to end on a grid of the *works*, drawn from the works registry under a heading
+ * that called them projects — so the studio could neither put anything under
+ * that heading that was not a work, nor keep a work off it. Two unlike things
+ * shared one collection because they looked alike on the day the page was drawn.
+ *
+ * What a project is not, it is not on purpose. No status: a work is completed,
+ * in progress or private because the index says so beside its number, and
+ * nothing on About says anything of the kind. No year, no disciplines, no
+ * credits — those are the columns of the works index, and the index is where
+ * they are read. And no page, so no route: a card is not a link, and `slug` is a
+ * stable key for ordering and for filing the photograph under, the way a
+ * programme's is. Nothing resolves a project by it.
+ */
+export interface Project {
+  slug: string;
+  title: LocalisedText;
+  /** The line or two under the picture. */
+  summary: LocalisedText;
+  image: ImageRef;
+}
+
+/**
  * The four pages the site has.
  *
  * **The set is code, and so is the composition of each one.** Every page here
@@ -87,8 +112,9 @@ export interface Mentor {
  *
  * What the pages do *not* carry is the collections they show. The works index
  * is the works, the programme list is the programmes, the band of portraits is
- * the mentors — a page names a collection rather than holding one, so adding a
- * work changes three pages and touches nothing here.
+ * the mentors, the grid at the foot of About is the projects — a page names a
+ * collection rather than holding one, so adding a work changes three pages and
+ * touches nothing here.
  */
 export const PAGE_KEYS = ['home', 'works', 'programs', 'about'] as const;
 
@@ -123,7 +149,13 @@ export interface ProgramsPage extends PageText {
   intro: readonly LocalisedText[];
 }
 
-/** About: the prose, then the people, then the projects. */
+/**
+ * About: the prose, then the people, then the projects.
+ *
+ * `projectsTitle` used to head a second drawing of the works index. It heads the
+ * projects now, which are records of their own; the heading did not have to
+ * change, because it was always the honest name for what it labelled.
+ */
 export interface AboutPage extends PageText {
   intro: readonly LocalisedText[];
   mentorsTitle: LocalisedText;
