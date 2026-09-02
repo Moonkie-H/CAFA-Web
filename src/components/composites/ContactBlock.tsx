@@ -9,6 +9,9 @@ import styles from './ContactBlock.module.css';
 interface ContactBlockProps {
   site: SiteContent;
   locale: Locale;
+  /** Where the form posts, out of the bundle. Null is a card with no form but
+      the reader's own mail client — see ContactForm. */
+  endpoint: string | null;
   labels: Dictionary['contact'];
 }
 
@@ -30,12 +33,14 @@ interface ContactBlockProps {
  *
  * This stays a server component. ContactForm is the only client boundary and it
  * holds no copy of its own — every string here is prerendered, including the
- * ones handed across that boundary as props.
+ * ones handed across that boundary as props, and the address the form posts to,
+ * which is read from the bundle by the layout and passed down rather than
+ * imported here: a composite is handed its data and never reaches for it.
  *
  * Where the card sits, how it arrives and how it is moved belong to
  * components/motion/PinnedNote, which is the only thing that renders it.
  */
-export function ContactBlock({ site, locale, labels }: ContactBlockProps) {
+export function ContactBlock({ site, locale, endpoint, labels }: ContactBlockProps) {
   const { contact } = site;
 
   return (
@@ -57,7 +62,7 @@ export function ContactBlock({ site, locale, labels }: ContactBlockProps) {
         <Fact label={labels.hours}>{contact.hours[locale]}</Fact>
       </dl>
 
-      <ContactForm to={contact.email} labels={labels} />
+      <ContactForm endpoint={endpoint} to={contact.email} locale={locale} labels={labels} />
     </div>
   );
 }

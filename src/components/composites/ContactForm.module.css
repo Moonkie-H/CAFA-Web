@@ -8,7 +8,17 @@
  * that line going to full ink.
  */
 
+/*
+ * The card, the form and what the card says back, in one column. The wrapper
+ * exists because the answer outlives the form: a sent message replaces the
+ * fields, and the line that says so has to be somewhere that is still there.
+ */
 .form {
+  display: grid;
+  row-gap: var(--space-s);
+}
+
+.fields {
   display: grid;
   /* The send sits at the trailing edge under the fields, so the column is what
      the fields set rather than what the button does. */
@@ -93,4 +103,64 @@
   .send:hover {
     color: var(--c-ink);
   }
+}
+
+/*
+ * The honeypot: in the document, out of the layout, out of the tab order and
+ * out of the accessibility tree. Zero-sized rather than `display: none`,
+ * because a form filler that skips hidden fields is exactly the caller this is
+ * trying to catch.
+ */
+.trap {
+  block-size: 0;
+  border: 0;
+  inline-size: 0;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+}
+
+/*
+ * What the card says back — a refusal to act on, a confirmation, or a failure.
+ * At --index, the same size as the note at the top of the card, because it is
+ * the same kind of line: the card talking rather than labelling.
+ *
+ * Empty until there is something to say, and it takes no room while it is: an
+ * empty grid item with a row-gap either side would hold a gap open under the
+ * button from first paint.
+ */
+.said {
+  color: var(--c-ink-70);
+  display: grid;
+  justify-items: start;
+  row-gap: var(--space-2xs);
+}
+
+.said:empty {
+  display: none;
+}
+
+/* The way out after a failure, and the one thing here that goes somewhere — so
+   it carries the underline the address above it carries, and its ink. */
+.draft {
+  color: var(--c-ink-70);
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  transition: color var(--dur-fast) var(--ease-io);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .draft:hover {
+    color: var(--c-ink);
+  }
+}
+
+/*
+ * In flight. The button keeps its place and its size — the word changes, not
+ * the layout — and stops being pressable, which is the whole of "sending" as a
+ * state. --c-ink-62 is the tertiary ink, one step back from the button's rest.
+ */
+.send:disabled {
+  color: var(--c-ink-62);
+  cursor: default;
 }

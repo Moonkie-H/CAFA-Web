@@ -94,7 +94,7 @@ the one place in the codebase that touches image markup.
     │       ├── MentorStrip.tsx      # the mentors, sideways through a pinned window
     │       ├── ProgramList.tsx
     │       ├── ContactBlock.tsx     # the card PinnedNote carries
-    │       └── ContactForm.tsx      # its two fields and Send — a mailto, no backend
+    │       └── ContactForm.tsx      # its two fields and Send — posts to the admin
     ├── content/
     │   └── bundle.generated.json    # fetched by prebuild; gitignored, never committed
     ├── lib/
@@ -312,18 +312,32 @@ nav bar is the pages *plus one item that is not a page*, which is why `SiteHeade
 special case in it.
 
 **The card carries a form, and where it sends is the whole of the decision.** §1 ships no
-server runtime, so there is nowhere for a POST to land — and a form that takes a message
-and drops it is worse than printing an address. So `ContactForm` never holds the message:
-Send composes a `mailto:` and navigates, which hands the fields to software the reader
-already trusts and leaves the message in their sent items. The `action` on the `<form>` is
-the same address again as the no-script path; JavaScript intercepts it only to write a
-subject line and a readable body. This is the one client component under the card, it is
-about forty lines, and it holds no copy — every string is prerendered and passed in.
+server runtime, so there is nowhere here for a POST to land — but there is somewhere on the
+other side: CAFA-Admin answers `/api/v1/contact`, checks the address and emails the message
+to whatever address the published `site.contact.email` names, which is the address printed
+on the card itself. So Send posts, and the address it posts to arrives in the bundle as
+`contactEndpoint` — a fact about the deployment that a browser needs, carried with the
+content for the same reason `mediaBase` is, rather than as a second environment variable on
+this side that could disagree with it.
 
-If the atelier ever wants messages arriving in an inbox it owns, that is an endpoint URL in
-that `action` and the deletion of one `onSubmit`. It is not an architecture change and it
-does not make §1 false: a form POST to somebody else's origin is not this site fetching its
-own content at runtime.
+**This does not make §1 false.** Nothing is read to render the card: every word on it was
+in the HTML before the browser started. A person pressing Send and something being sent is
+not this site fetching its own content at runtime, and it costs the LCP nothing.
+
+**A message is never silently dropped**, which is what the three answers under the button
+are for. A refusal — a malformed address, a domain that receives no mail, too many messages
+in a minute — comes back as the admin's own sentence for whoever typed it, shown as it
+stands, with the form left exactly as they left it. A confirmation replaces the form, so the
+same message cannot be sent twice by accident. A failure to reach the admin at all, and a
+`503` that means the studio has not finished setting the form up, offer the `mailto:` draft
+carrying what was already typed — which is also what a bundle with `contactEndpoint: null`
+does without the round trip, and what the `<form action>` still does with no JavaScript at
+all. Validation is the browser's `type="email"` on the way out, in the reader's own
+language, and the Worker's on the way in, which checks the shape and then asks DNS whether
+the domain can receive mail before it sends anything.
+
+This is the one client component under the card and it holds no copy — every string,
+including the four states, is prerendered and passed in.
 
 - **Two root layouts, and no `app/layout.tsx`.** A root layout cannot read route params, so
   a single one would have to hardcode `<html lang>` — wrong on every page of the other
@@ -591,8 +605,10 @@ Listed so it stays absent:
 - No global state. The one piece of shared client state (hovered work) is `useState` inside
   `WorkIndex`.
 - No i18n, form, icon, carousel, lightbox or UI library. The contact form is two inputs, a
-  button and a `mailto:` — see §4. What stays absent is the *library*, and with it the
-  validation schema, the resolver and the controlled-input re-render on every keystroke.
+  button, one `fetch` and four states — see §4. What stays absent is the *library*, and with
+  it the validation schema, the resolver and the controlled-input re-render on every
+  keystroke: the fields are uncontrolled, the browser refuses the obvious, and the Worker is
+  the authority on the rest.
 - No dark mode. The palette is near-monochrome by design; a second theme adds tokens,
   testing surface and contrast bugs for no editorial gain. Revisit only if asked.
 - No animation library, still. What replaced the "no page transitions" line that used to sit
