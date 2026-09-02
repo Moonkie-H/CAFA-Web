@@ -31,25 +31,32 @@ than a style guide.
 
 ## Building
 
-A build needs to know where to read the content from:
-
 ```sh
 npm install
-CONTENT_API=https://admin.cafa-studio.com/api/content/published npm run build
+npm run build
 ```
 
-With `CONTENT_API` unset, the build reuses whatever bundle is already on disk —
-so a local checkout can work offline once it has fetched once — and fails with
-instructions if there is nothing to fall back on. A build that was *told* where
-to look and could not reach it fails rather than quietly shipping yesterday's
-content.
+Nothing to configure. `scripts/fetch-content.mjs` reads
+`https://admin.cafa-studio.com/api/content/published` by default, and that URL
+is checked in rather than supplied by the deploy: it is public configuration —
+the same URL a browser could read — and every arrangement that passed it in
+from outside broke a deploy when it went missing. Cloudflare does not hand a
+Worker's `vars` to `npm run build`, so `wrangler.jsonc` deliberately declares
+none.
 
-The production branch on Cloudflare Workers Builds defaults to the published
-endpoint as a bootstrap fallback. An explicit `CONTENT_API` still wins, so
-preview builds can point at the draft endpoint without changing the script.
+`CONTENT_API` overrides the endpoint, and is how the preview build points at
+`/api/content/draft`; it sends `PREVIEW_TOKEN` with it, which is what unlocks
+unpublished work for "View draft" in the admin.
 
-The preview build points `CONTENT_API` at `/api/content/draft` instead and sends
-`PREVIEW_TOKEN`, which is how "View draft" in the admin shows unpublished work.
+```sh
+CONTENT_API=https://admin.cafa-studio.com/api/content/draft PREVIEW_TOKEN=… npm run build
+```
+
+A build that cannot reach the admin fails rather than quietly shipping
+yesterday's content. The one exception is a developer's machine on the default
+endpoint, which falls back to the bundle already on disk so an offline checkout
+that has fetched once still runs — CI never takes that path, and a build given
+an explicit `CONTENT_API` never does either.
 
 ```sh
 npm run dev        # fetch content, then next dev
