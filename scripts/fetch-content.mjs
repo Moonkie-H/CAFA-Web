@@ -14,18 +14,26 @@
  *
  * Runs as `prebuild`, and as part of `npm run dev`.
  *
- *   CONTENT_API    the endpoint to read. Production builds point it at
- *                  /api/content/published; the preview build points it at
- *                  /api/content/draft and sends PREVIEW_TOKEN with it.
+ *   CONTENT_API    optional override of where to read. The published endpoint
+ *                  below is the default, so a plain `npm run build` works in
+ *                  any checkout and on any CI; the preview build points this
+ *                  at /api/content/draft and sends PREVIEW_TOKEN with it.
  *   PREVIEW_TOKEN  optional; only the preview build has one.
  *
- * With CONTENT_API unset it reuses whatever bundle is already on disk, so a
- * local checkout can build offline once it has fetched once. The production
- * branch on Workers Builds uses the public published endpoint as a bootstrap
- * fallback; preview builds still have to provide their draft endpoint and token.
- * A build that was *told* where to look and could not reach it fails instead —
- * quietly shipping yesterday's content because a network call timed out is the
- * one outcome worth refusing.
+ * The default is checked in on purpose. It is public configuration — the same
+ * URL a browser could read — and every attempt to supply it from outside has
+ * failed the same way: Cloudflare's build step does not hand a Worker's
+ * `vars` to `npm run build`, and a rule keyed on the CI's own branch variable
+ * only moved the failure to whichever build did not match it. A deploy that
+ * breaks because a value nobody edits went missing is a value that belongs in
+ * the repository.
+ *
+ * A build that cannot reach the admin fails: quietly shipping yesterday's
+ * content because a network call timed out is the one outcome worth refusing.
+ * The single exception is a developer's own machine, where an unreachable
+ * admin falls back to the bundle already on disk so an offline checkout that
+ * has fetched once still runs. CI never takes that path — it has no bundle to
+ * fall back on, and is held to the endpoint regardless.
  */
 import { access, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -33,11 +41,24 @@ import path from 'node:path';
 import { ContentApiError, describeBundle, readBundle } from '../src/services/content-api.mts';
 
 const OUT = path.resolve(import.meta.dirname, '..', 'src', 'content', 'bundle.generated.json');
-const WORKERS_PRODUCTION_API = 'https://admin.cafa-studio.com/api/content/published';
-const isWorkersProduction =
-  process.env.WORKERS_CI === '1' && process.env.WORKERS_CI_BRANCH === 'main';
-const API = process.env.CONTENT_API ?? (isWorkersProduction ? WORKERS_PRODUCTION_API : undefined);
+
+/** Where the published content is read from when nothing says otherwise. */
+const PUBLISHED_API = 'https://admin.cafa-studio.com/api/content/published';
+
+/** An explicit endpoint is a command; the default is a convenience. */
+const CONFIGURED = process.env.CONTENT_API?.trim();
+const API = CONFIGURED || PUBLISHED_API;
 const TOKEN = process.env.PREVIEW_TOKEN;
+
+/**
+ * Whether an unreachable admin may fall back to the bundle on disk.
+ *
+ * Only on a developer's machine, and only when the endpoint is the default
+ * one: a build that was *told* where to look fails instead, and so does every
+ * automated build, which must take what the admin is publishing now or nothing.
+ */
+const mayReuseDisk =
+  !CONFIGURED && !process.env.CI && !process.env.WORKERS_CI && !process.env.GITHUB_ACTIONS;
 
 async function exists(file) {
   try {
@@ -48,27 +69,16 @@ async function exists(file) {
   }
 }
 
-if (!API) {
-  if (await exists(OUT)) {
-    console.info('content: CONTENT_API unset, reusing the bundle already on disk');
-    process.exit(0);
-  }
-  console.error(
-    [
-      'content: CONTENT_API is not set and there is no bundle to fall back on.',
-      '',
-      'Point it at the admin, for example:',
-      '  CONTENT_API=https://admin.cafa-studio.com/api/content/published npm run build',
-    ].join('\n'),
-  );
-  process.exit(1);
-}
-
 let bundle;
 try {
   bundle = await readBundle({ endpoint: API, previewToken: TOKEN });
 } catch (error) {
   if (!(error instanceof ContentApiError)) throw error;
+  if (mayReuseDisk && (await exists(OUT))) {
+    console.warn(`content: ${error.message}`);
+    console.warn('content: offline, reusing the bundle already on disk');
+    process.exit(0);
+  }
   console.error(`content: ${error.message}`);
   process.exit(1);
 }
