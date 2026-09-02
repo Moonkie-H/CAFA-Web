@@ -39,10 +39,25 @@
   line-height: calc(var(--type-meta-leading) + var(--type-lang-leading-add));
 }
 
+/*
+ * No text-transform. It used to say `uppercase`, and that was the one place in
+ * the stylesheet that overrode the content: a nav item, a section heading, the
+ * home statement and every gutter label is a string somebody typed in
+ * CAFA-Admin, and the page shouted all of them back whatever case they were
+ * written in. Case is meaning in Latin — a studio's name, an acronym, a
+ * deliberately lower-case title — and a transform that erases it is the CSS
+ * equivalent of a hardcoded string (CLAUDE.md §4): it made the *rendering*
+ * disagree with the record, with no way to fix it from the admin.
+ *
+ * What is left is what actually did the work at 11 px. The tracking is the
+ * label's own token and stays; big.dk's gutter labels read as labels because
+ * they are small, spaced and set apart from the prose, and the capitals were
+ * never the load-bearing half. Anything that genuinely wants to be shouted can
+ * be typed that way.
+ */
 .label {
   font-size: var(--type-label-size);
   font-weight: var(--type-label-weight);
   letter-spacing: var(--type-label-tracking);
   line-height: calc(var(--type-label-leading) + var(--type-lang-leading-add));
-  text-transform: uppercase;
 }

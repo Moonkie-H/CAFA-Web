@@ -2,18 +2,13 @@ import type { Metadata } from 'next';
 
 import { MentorStrip } from '@/components/composites/MentorStrip';
 import { PageHeading } from '@/components/composites/PageHeading';
-import { WorkGrid } from '@/components/composites/WorkGrid';
+import { ProjectGrid } from '@/components/composites/ProjectGrid';
 import { partClass } from '@/components/motion/Part';
 import { Grid } from '@/components/primitives/Grid';
 import { Text } from '@/components/primitives/Text';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import { cx } from '@/lib/class-names';
-import {
-  getMentors,
-  getPage,
-  getPublishedWorkListings,
-  requireLocale,
-} from '@/lib/content';
+import { getMentors, getPage, getProjects, requireLocale } from '@/lib/content';
 import { pageMetadata } from '@/lib/metadata';
 import { routes, type LocaleParams } from '@/lib/routes';
 
@@ -63,11 +58,11 @@ export default async function AboutPage({ params }: LocaleParams) {
         className={styles.strip}
       />
       <Grid>
-        <WorkGrid
-          works={getPublishedWorkListings()}
+        <ProjectGrid
+          projects={getProjects()}
           locale={locale}
           heading={page.projectsTitle[locale]}
-          className={cx(styles.works, partClass('listing'))}
+          className={cx(styles.projects, partClass('listing'))}
         />
       </Grid>
     </>

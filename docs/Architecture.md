@@ -89,7 +89,7 @@ the one place in the codebase that touches image markup.
     │       ├── WorkMetaPanel.tsx    # sticky left column on detail
     │       ├── WorkPager.tsx        # previous / next; the rule the footer joins onto
     │       ├── MediaSequence.tsx    # scrolling right column on detail
-    │       ├── WorkGrid.tsx         # the projects as covers
+    │       ├── ProjectGrid.tsx      # the projects — a picture, a name, a line
     │       ├── Gallery.tsx          # photographs, full bleed, one at a time
     │       ├── MentorStrip.tsx      # the mentors, sideways through a pinned window
     │       ├── ProgramList.tsx
@@ -99,7 +99,7 @@ the one place in the codebase that touches image markup.
     │   └── bundle.generated.json    # fetched by prebuild; gitignored, never committed
     ├── lib/
     │   ├── content-schema.ts        # JSON → typed records, or a build failure
-    │   ├── content.ts               # getPage, getNav, getWorks, getWorkListings … — typed, pure
+    │   ├── content.ts               # getPage, getNav, getWorks, getProjects … — typed, pure
     │   ├── routes.ts                # every path in the site, as functions
     │   ├── metadata.ts              # canonical + hreflang, built from a route function
     │   ├── json-ld.ts               # schema.org payloads, so no page knows a vocabulary
@@ -171,6 +171,25 @@ export interface Work {
                                 // and the shared element carried between the two (§5.4)
   media: ImageRef[];            // the rest of the scrolling right column, in order
 }
+
+/**
+ * The smallest record here, and deliberately so. A project is what About ends
+ * on: a picture, a name, and a line under it. No status, no year, no
+ * disciplines, no credits — those are the columns of the works index, and the
+ * index is where they are read. No page either, so `slug` is a stable key for
+ * ordering rather than a URL segment; nothing resolves a project by it.
+ *
+ * It has a table of its own because it used to not. About's closing grid was the
+ * works registry drawn a second time, under a heading that called them projects,
+ * so the studio could neither put something under that heading that was not a
+ * work nor keep a work off it.
+ */
+export interface Project {
+  slug: string;
+  title: LocalisedText;
+  summary: LocalisedText;       // the line or two under the picture
+  image: ImageRef;
+}
 ```
 
 ```ts
@@ -189,7 +208,7 @@ export interface SitePages {
   about: PageText & {
     intro: readonly LocalisedText[];
     mentorsTitle: LocalisedText;  // the heading over the band of portraits
-    projectsTitle: LocalisedText; // the heading over the grid of covers
+    projectsTitle: LocalisedText; // the heading over the projects
   };
 }
 ```
@@ -257,8 +276,9 @@ So:
   the one item that is not a page — it opens a panel over the page you are on — so its
   label is dictionary copy and `SiteHeader` appends it.
 - The **collections are not on the pages.** The works index *is* the works, the programme
-  list is the programmes, the band of portraits is the mentors. A page names a collection
-  rather than carrying one, so adding a work changes three pages and touches nothing here.
+  list is the programmes, the band of portraits is the mentors, the grid at the foot of
+  About is the projects. A page names a collection rather than carrying one, so adding a
+  work changes three pages and touches nothing here.
 - A work's own page is generated from the registry under a fixed segment, because its
   address has to stay valid for as long as anything cites it.
 
