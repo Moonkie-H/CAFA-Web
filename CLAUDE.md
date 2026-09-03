@@ -29,8 +29,9 @@ Stack, fixed:
 - TypeScript, `strict: true`
 - Plain CSS Modules + CSS custom properties. No Tailwind, no CSS-in-JS runtime.
 - `motion` (the `m` + `LazyMotion` subset only) for the handful of animations CSS cannot do
-- Content fetched at build time from CAFA-Admin; images transformed on delivery by
-  Cloudflare from R2. There is no image build step and no `sharp`.
+- Content fetched at build time from CAFA-Admin; images served from R2, either transformed
+  on delivery by Cloudflare or, where the zone cannot, at the widths the admin wrote at
+  upload. There is no image build step here and no `sharp` anywhere.
 - Locales: `zh` (default, served at `/`), `en` (served at `/en`)
 
 Do not add a dependency without an explicit instruction. If you believe one is needed,
@@ -157,11 +158,15 @@ Rules that keep this true:
   `width`, `height`, `top`, `left`, `margin` or `background-color` is a defect.
 - Every image and video element declares intrinsic `width`/`height` (or an
   `aspect-ratio` box). CLS from media is unacceptable.
-- Images: one `srcset` + `sizes` on every one, served through Cloudflare image
-  transformations with `format=auto`, which negotiates AVIF or WebP per request from the
-  `Accept` header. `loading="lazy"` and `decoding="async"` except the LCP image, which is
-  eager with `fetchPriority="high"`. Every `<img>` carries intrinsic `width`/`height` from
-  the bundle — that is what the CLS budget rests on, so it is not optional.
+- Images: one `srcset` + `sizes` on every one — no exceptions, and a single full-size
+  candidate is not a `srcset`. Where the zone can transform, the ladder is Cloudflare's,
+  with `format=auto` negotiating AVIF or WebP per request from the `Accept` header; where
+  it cannot (`mediaTransform: false`, which is where the live zone is), the ladder was
+  written into R2 at upload by the admin and the bundle names its widths. `lib/media.ts`
+  is the one place that knows which. `loading="lazy"` and `decoding="async"` except the
+  LCP image, which is eager with `fetchPriority="high"`. Every `<img>` carries intrinsic
+  `width`/`height` from the bundle — that is what the CLS budget rests on, so it is not
+  optional.
 - Fonts: self-hosted `woff2`, subset, `font-display: swap`, preloaded, with a metric-matched
   fallback in the `font-family` stack so the swap doesn't shift layout.
 - No scroll or resize handler without `passive: true`; prefer `IntersectionObserver`,
@@ -202,6 +207,9 @@ Rules that keep this true:
   The carve-out is bounded:
   - It covers exactly those three roles. `body` and everything above it never goes below
     14 px, and no component invents a size outside the six roles in DESIGN-SYSTEM.md §3.
+    The studio's own `--type-scale` is not an exception to this: it multiplies all six
+    together and never goes below 1, so it can move the whole scale up and can neither
+    invent a size off it nor take these three under the floor.
   - `index` and `meta` step up once below `--bp-sm` (to 14 px and 12 px) so a phone still
     clears the touch floor above.
   - Small never also means pale. Every one of these roles is held to the 4.5:1 rule in §10

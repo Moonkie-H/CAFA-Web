@@ -574,16 +574,38 @@ plan; on a Free zone the toggle is an upgrade prompt, and every `/cdn-cgi/image/
 answers with something that is not an image — a site that builds, deploys and renders with
 every photograph broken, reporting nothing. The admin knows which it is (it is the
 `MEDIA_TRANSFORM` var, and `npm run media` over there checks it against the real zone) and
-says so in the bundle as `mediaTransform`. When it is false, `lib/media.ts` points every
-`<img>` at `<mediaBase>/<key>` — the original, at the 2400px the browser downscaled it to
-on upload — and the `srcset` carries one candidate at that intrinsic width rather than a
-ladder of five URLs that all resolve to the same file.
+says so in the bundle as `mediaTransform`. It is currently **false**, so this is the path
+the live site is actually on.
 
-That is a deliberate, temporary derogation from CLAUDE.md §7, and it is the smaller of two
-failures: a heavy page against no page at all. The compliant state is a zone on a plan that
-transforms — turn Images → Transformations on, drop `MEDIA_TRANSFORM` from the admin's
-`wrangler.jsonc`, redeploy and publish once, and the ladder comes back with no change
-here.
+It used to mean the `srcset` carried one candidate, at the original's own 2400px, for every
+device. That was described here as a heavy page and nothing worse, and it was wrong: a
+phone was being handed the full-size original of every photograph on the page, and a page
+of those is where a mobile browser stops decoding and draws a broken image. Photographs did
+not appear on mobile at all.
+
+So the ladder is built at upload instead of on delivery. The browser doing the uploading has
+already decoded the photograph in order to resize it — a Worker has no decoder and there is
+no sharp here or there — so it writes the narrower copies in the same pass and files each
+under the original's key with a `derived/<width>/` prefix:
+
+```
+<mediaBase>/derived/768/works/edible-house/01.jpg?v=<version>
+```
+
+The widths it wrote travel in the bundle as `media[key].widths`, and `variants()` turns them
+into candidates. So `mediaTransform` now decides *which* ladder a page uses, not whether it
+has one: the markup, the `sizes` and the CLS behaviour are identical either way, and
+CLAUDE.md §7's "one `srcset` + `sizes` on every image" holds on both. Widths are ascending
+and always narrower than the original, which is the last rung — a candidate declared wider
+than the file behind it is a lie the browser plans its `sizes` around.
+
+A photograph uploaded before the ladder existed publishes `widths: []` and still gets the
+single full-size candidate. The admin's **General → Photograph sizes** backfills those in
+one pass without re-encoding the originals, so no version moves and no URL changes.
+
+The compliant-and-cheaper state is still a zone that transforms — turn Images →
+Transformations on, drop `MEDIA_TRANSFORM` from the admin's `wrangler.jsonc`, redeploy and
+publish once, and the `/cdn-cgi/image/` ladder comes back with no change here.
 
 `MediaFrame.tsx` emits:
 

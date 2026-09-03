@@ -28,6 +28,17 @@
   row-gap: var(--space-3xs);
 }
 
+/*
+ * The name takes `body`'s size but a heading's leading. `body` is tuned for
+ * prose that wraps, and at 1.62 — 1.74 in Chinese — a two-word name floats away
+ * from the two particulars ranged under it instead of leading them. The title
+ * role's leading is what the rest of the site sets a heading at, and it holds
+ * the group together.
+ */
+.gutter .name {
+  line-height: calc(var(--type-title-leading) + var(--type-lang-leading-add));
+}
+
 .particular {
   color: var(--c-ink-62);
 }

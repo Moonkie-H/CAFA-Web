@@ -21,7 +21,9 @@ import { parseMedia, type MediaFacts } from './content-schema';
  *
  * Unless the zone cannot transform, which is a state a Free plan can be left in
  * and which nothing on the page would report. The bundle says which it is, and
- * `deliveryUrl` is the one place that branches on the answer.
+ * `variants` is the one place that branches on the answer — into a ladder the
+ * admin wrote at upload instead of one the edge derives on delivery. The two
+ * produce the same `srcset`; only the URLs in it differ.
  */
 
 /** What the admin measured, plus where the original lives. */
@@ -130,29 +132,57 @@ function sourceUrl(entry: ImageEntry): string {
  * never enlarges, so the ladder below matches `targetWidths()` in the pipeline
  * this replaced — every step under the original's own width, then the original.
  *
- * With transforms off there is no width to ask for. The original is the only
- * thing in the bucket, and the URL is the key against the media origin.
- *
- * The version rides on the source half either way. Under `/cdn-cgi/image/` the
- * source is a URL like any other and its query reaches the origin, and the edge
- * keys the derivative on the whole request — so one digest busts the original
- * and all five transforms of it.
+ * The version rides on the source half. Under `/cdn-cgi/image/` the source is a
+ * URL like any other and its query reaches the origin, and the edge keys the
+ * derivative on the whole request — so one digest busts the original and all
+ * five transforms of it.
  */
-function deliveryUrl(entry: ImageEntry, width: number): string {
-  const source = sourceUrl(entry);
-  if (!transforms) return source;
+function transformUrl(entry: ImageEntry, width: number): string {
   const options = `width=${width},quality=${QUALITY},format=auto,fit=scale-down`;
-  return `/cdn-cgi/image/${options}/${source}`;
+  return `/cdn-cgi/image/${options}/${sourceUrl(entry)}`;
 }
 
+/**
+ * The same photograph, narrower, as a second object rather than a transform.
+ *
+ * What a zone that cannot transform has instead. The admin wrote this file at
+ * upload — from the browser that had just decoded the photograph in order to
+ * resize it, because a Worker has no decoder and there is no sharp in either
+ * repository — and filed it under the original's key with a `derived/<width>/`
+ * prefix. The key of the original is what the version belongs to, so the query
+ * is the same one: replacing a photograph re-files every rung of its ladder,
+ * and one digest busts all of them together.
+ */
+function storedUrl(entry: ImageEntry, width: number): string {
+  const url = `${base}/derived/${width}/${entry.src}`;
+  return entry.version === null ? url : `${url}?v=${entry.version}`;
+}
+
+/**
+ * Every candidate for one photograph, narrowest first.
+ *
+ * Two ways to get the same ladder, and which one is used is the only thing
+ * `mediaTransform` decides. With transforms the widths are asked for on
+ * delivery; without them they were made at upload and this reads the list off
+ * the bundle. Either way the site emits a real `srcset` — which is the point,
+ * because for a while the second case emitted one candidate at 2400px and a
+ * phone was handed the full-size original of every photograph on the page.
+ * A page of those is where a mobile browser stops decoding and draws a broken
+ * image, and that is exactly what it did.
+ *
+ * The original is always the last rung, and no candidate is ever declared wider
+ * than the file behind it: a `srcset` that offers 1800w and hands over 1200
+ * pixels is a lie the browser plans its `sizes` around.
+ */
 export function variants(entry: ImageEntry): ImageVariant[] {
-  // One derivative, because there is one file. Declared at the original's own
-  // width rather than at the ladder's steps: a srcset that offers 480w and
-  // hands over 2400 pixels is a lie the browser plans its `sizes` around, and
-  // it would pick the smallest candidate for every slot on the page.
-  if (!transforms) return [{ src: deliveryUrl(entry, entry.width), width: entry.width }];
+  if (!transforms) {
+    return [
+      ...entry.widths.map((width) => ({ src: storedUrl(entry, width), width })),
+      { src: sourceUrl(entry), width: entry.width },
+    ];
+  }
 
   const cap = Math.min(entry.width, WIDTHS[WIDTHS.length - 1] ?? entry.width);
   const steps = [...new Set([...WIDTHS.filter((width) => width < cap), cap])];
-  return steps.map((width) => ({ src: deliveryUrl(entry, width), width }));
+  return steps.map((width) => ({ src: transformUrl(entry, width), width }));
 }

@@ -45,32 +45,54 @@
     system-ui, 'Helvetica Neue', sans-serif;
   --font-features: 'cv05' 1, 'ss03' 1; /* Inter's l with a tail, single-storey g */
 
-  --type-display-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem);
+  /*
+   * The studio's own step, and the whole of the "font size, like
+   * Word" control.
+   *
+   * Word's answer is a point size on a run of text, and it is the one thing this
+   * design cannot offer: the six roles below are what make every page look like
+   * one site, and CLAUDE.md §9 forbids a component inventing a size outside
+   * them. So the studio moves the *scale* instead — one multiplier, applied to
+   * all six at once, which is why their proportions survive it and why nothing
+   * can arrive off the scale.
+   *
+   * The steps are small on purpose. 1.08 and 1.16 are about one and two points
+   * on a 16px body; the request was "a little bigger", and a step large enough
+   * to be a decision is a step large enough to break a two-column line-up.
+   *
+   * The default is 1 and there is no step below it. `index`, `meta` and `label`
+   * sit on §9's carve-out floor at 13px and 11px, and a global multiplier under
+   * 1 would take all three below it — which is the one thing the carve-out is
+   * bounded to prevent.
+   */
+  --type-scale: 1;
+
+  --type-display-size: calc((clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem)) * var(--type-scale));
   --type-display-leading: 1.02;
   --type-display-tracking: -0.02em;
   --type-display-weight: 400;
 
-  --type-title-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+  --type-title-size: calc((clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem)) * var(--type-scale));
   --type-title-leading: 1.15;
   --type-title-tracking: -0.012em;
   --type-title-weight: 400;
 
-  --type-body-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --type-body-size: calc((clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)) * var(--type-scale));
   --type-body-leading: 1.62;
   --type-body-tracking: 0;
   --type-body-weight: 400;
 
-  --type-index-size: 0.8125rem; /* 13px — fixed, not fluid */
+  --type-index-size: calc((0.8125rem) * var(--type-scale)); /* 13px — fixed, not fluid */
   --type-index-leading: 1.7;
   --type-index-tracking: 0;
   --type-index-weight: 400;
 
-  --type-meta-size: 0.6875rem; /* 11px — fixed, not fluid */
+  --type-meta-size: calc((0.6875rem) * var(--type-scale)); /* 11px — fixed, not fluid */
   --type-meta-leading: 1.55;
   --type-meta-tracking: 0.01em;
   --type-meta-weight: 400;
 
-  --type-label-size: 0.6875rem; /* 11px */
+  --type-label-size: calc((0.6875rem) * var(--type-scale)); /* 11px */
   --type-label-leading: 1;
   --type-label-tracking: 0.09em;
   --type-label-weight: 500;
@@ -87,6 +109,16 @@
   --type-field-size: max(1rem, var(--type-body-size));
 
   /*
+   * A QR code is scanned rather than read, so it has one useful edge instead of
+   * a fluid one: large enough for a phone camera at arm's length, small enough
+   * that it does not become the loudest thing on a card whose subject is the
+   * form beside it. It is the only image on the site with a size of its own,
+   * and it is here rather than in the component for the same reason every other
+   * measurement is.
+   */
+  --qr-size: 9rem;
+
+  /*
    * Also not a seventh role. The front page statement is set in `body` like any
    * other prose; this is only its leading, and it exists because the statement
    * is the one piece of copy on the site whose line breaks the studio types
@@ -99,7 +131,6 @@
    * the Chinese front page, so raising it again there would undo the choice.
    */
   --type-statement-leading: 1.5;
-
   /* §4 Space — 8px base with a fluid multiplier. Nine steps, no more. */
   --space-3xs: 0.25rem; /*  4 */
   --space-2xs: 0.5rem; /*  8 */
@@ -558,6 +589,27 @@
 }
 
 /*
+ * The studio's type step, as the layout stamps it on <html> from the bundle.
+ *
+ * An attribute rather than an inline `style` on the element, so the two numbers
+ * stay in this file with every other measurement — a component that wrote
+ * `--type-scale: 1.08` into JSX would be the hardcoded value CLAUDE.md §4 calls
+ * a defect, whichever side of the boundary it sat on.
+ *
+ * `normal` has no rule because it is the declared default above. There is no
+ * rule below 1 either, and that is the bound on the whole feature: `index`,
+ * `meta` and `label` sit on §9's carve-out floor, so smaller is the one
+ * direction the studio may not take them.
+ */
+:root[data-type-scale='large'] {
+  --type-scale: 1.08;
+}
+
+:root[data-type-scale='larger'] {
+  --type-scale: 1.16;
+}
+
+/*
  * §3 CJK adjustment — Chinese needs more leading and no negative tracking.
  * These two are applied by Text.module.css at the element that carries the role,
  * not folded into the role tokens here: a custom property is substituted where it
@@ -579,8 +631,8 @@
 /* §3 — index and meta step once below --bp-sm so they clear the touch floor. */
 @media (width < 480px) {
   :root {
-    --type-index-size: 0.875rem; /* 14px */
-    --type-meta-size: 0.75rem; /* 12px */
+    --type-index-size: calc(0.875rem * var(--type-scale)); /* 14px */
+    --type-meta-size: calc(0.75rem * var(--type-scale)); /* 12px */
   }
 }
 

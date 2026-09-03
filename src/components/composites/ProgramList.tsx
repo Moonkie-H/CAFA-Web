@@ -59,11 +59,22 @@ export function ProgramList({ programs, locale, className }: ProgramListProps) {
             {/* Three children, and the count is load-bearing: the stack trigger
                 staggers them a beat apart along the track's timeline, so the
                 entry assembles as it rises instead of arriving already made. */}
-            <Text role="meta" as="p" className={styles.index}>
+            {/* `index` rather than `meta`: this is the running number, which is
+                the role's whole reason for existing, and at 11px beside a
+                heading it read as a footnote on the entry rather than as its
+                number. 13px is what the works index sets the same figure at. */}
+            <Text role="index" as="p" className={styles.index}>
               {String(index + 1).padStart(2, '0')}
             </Text>
             <div className={styles.gutter}>
-              <Text role="label" as="h2">
+              {/* And the name is a heading, not a gutter label. It was set in
+                  `label` — 11px, tracked wide — which is the type the nav is
+                  set in; on a page that gives each programme a whole screen,
+                  the one thing naming that screen cannot be the smallest type
+                  on it. `body` keeps it a quiet line and makes it a readable
+                  one. Its particulars stay in `meta` underneath, so the
+                  ranged-right gutter still reads as a group. */}
+              <Text role="body" as="h2" className={styles.name}>
                 {program.name[locale]}
               </Text>
               <Text role="meta" className={styles.particular}>

@@ -143,13 +143,32 @@ seventh role and no ad-hoc `font-size` anywhere.
 | `meta` | `0.6875rem` (11px) | 1.55 | 0.01em | 400 | Credits, status, captions |
 | `label` | `0.6875rem` (11px) | 1 | 0.09em | 500 | Nav, gutter labels, buttons |
 
-The home statement moved from `label` to `body`, and it is the one row of this table
-that has changed since it was written. Setting it in the nav's type said the first screen
+Every size in that column is multiplied by `--type-scale`, which is the studio's own
+control: `normal` (1), `large` (1.08) or `larger` (1.16), chosen in CAFA-Admin under
+General and stamped onto `<html>` as `data-type-scale`. It is the answer to "a font size
+feature, like Word" that this design can honour — Word's answer is a point size on a run of
+text, and a field that can put 9px on a paragraph can break §10's contrast floor and §9's
+touch floor in one edit. Moving all six roles together keeps their proportions and keeps
+every size on the scale. **There is no step below 1**: `index`, `meta` and `label` already
+sit on §9's carve-out floor, so smaller is the one direction they may not go.
+
+Two rows have changed since this table was written, and both for the same reason: `label`
+was being asked to carry things that are not labels.
+
+The home statement moved from `label` to `body`. Setting it in the nav's type said the first screen
 was one line of the same small type the bar is — true while it *was* one line. It is prose
 the studio breaks where it likes now, and 11px with 0.09em of tracking makes a caption of
 a statement rather than a statement. It keeps `body`'s size and tracking and takes its own
 leading, `--type-statement-leading`, because paragraph leading opens hand-broken lines into
 unrelated ones; that token is a single property on a single page, not a seventh role.
+
+**A programme's name moved the same way, and its number from `meta` to `index`.** Programmes
+gives each entry a whole screen, and the one thing naming that screen was the smallest type
+on it — 11px, tracked wide, the type the nav bar is set in — while the running number beside
+it read as a footnote rather than as the number. The name takes `body`'s size with the title
+role's leading, since a two-word heading at paragraph leading floats away from the two
+particulars ranged under it; the number takes `index`, which is the role that exists for
+exactly this figure and is what the works index already sets it at.
 
 `index` and `meta` stay fixed rather than fluid: at these sizes fluid scaling either breaks
 the 44 px touch floor on mobile or bloats absurdly at 2560 px. They step once at the `sm`

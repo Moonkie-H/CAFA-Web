@@ -88,6 +88,9 @@
   grid-column: 1 / -1;
   max-inline-size: var(--measure);
   padding-inline-end: var(--tap-min);
+  /* Several sentences about how the studio answers, so the paragraph breaks the
+     studio typed are the shape of it. See .factValue. */
+  white-space: pre-line;
 }
 
 /* Start-aligned rather than stretched: the form column is the taller of the two
@@ -126,9 +129,40 @@
   color: var(--c-ink-62);
 }
 
+/*
+ * `pre-line`, so a value the studio broke stays broken.
+ *
+ * The address is the one that asked for it — "154-168 Broadway, Newmarket,
+ * Auckland, 1023" is a postal address written on one line because there was no
+ * way to write it on two — and the hours are the same shape of thing. Runs of
+ * spaces still collapse and a long line still wraps against the column, so this
+ * only ever adds the breaks somebody typed; where nobody typed one, nothing
+ * about the card changes.
+ *
+ * The email is not affected: it is a single token inside .link and has no
+ * newline to keep.
+ */
 .factValue {
   color: var(--c-ink-70);
   margin-inline-start: 0;
+  white-space: pre-line;
+}
+
+/*
+ * A QR code is square, is scanned rather than read, and has one useful size:
+ * large enough for a phone camera across a desk, small enough not to become the
+ * loudest thing on a card whose subject is the form beside it. It does not grow
+ * with the column, so it is the one image on the site with a fixed edge — and it
+ * keeps its intrinsic width/height attributes all the same, which is what holds
+ * its box open before the bytes arrive.
+ *
+ * Held off the id above it rather than crowding it, and start-aligned so it
+ * lines up with the labels rather than floating in the middle of the column.
+ */
+.factValue .qr {
+  inline-size: var(--qr-size);
+  margin-block-start: var(--space-2xs);
+  max-inline-size: 100%;
 }
 
 .link {

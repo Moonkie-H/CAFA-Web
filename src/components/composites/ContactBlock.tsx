@@ -1,10 +1,19 @@
 import type { ReactNode } from 'react';
 
+import { Media } from '@/components/primitives/Media';
 import { Text } from '@/components/primitives/Text';
 import type { Dictionary, Locale, SiteContent } from '@/lib/types';
 
 import { ContactForm } from './ContactForm';
 import styles from './ContactBlock.module.css';
+
+/**
+ * The code is drawn at a fixed edge — a QR is square and is scanned, not read,
+ * so it has one useful size and no reason to grow with the column. --qr-size is
+ * that edge, and it is what `sizes` has to restate in the one syntax that cannot
+ * read a token.
+ */
+const QR_SIZES = '9rem';
 
 interface ContactBlockProps {
   site: SiteContent;
@@ -25,6 +34,11 @@ interface ContactBlockProps {
  * From --bp-md up they sit side by side, the addresses in the narrow column at
  * --note-details and the form taking the rest; below it they stack, which is the
  * only arrangement a phone has room for.
+ *
+ * The WeChat line is the one that carries more than a value: under the id sits
+ * the studio's QR code, where there is one. It is the only optional image in the
+ * content and the only one belonging to no record, and it earns the exception
+ * because scanning is how that particular address is actually used.
  *
  * The addresses are set small on purpose. They were a --title-role email over
  * three lines of metadata, which made the loudest thing on the card the one
@@ -58,7 +72,21 @@ export function ContactBlock({ site, locale, endpoint, labels }: ContactBlockPro
           </a>
         </Fact>
         <Fact label={labels.address}>{contact.address[locale]}</Fact>
-        <Fact label={labels.wechat}>{contact.wechat}</Fact>
+        <Fact label={labels.wechat}>
+          {contact.wechat}
+          {/* The id on its own asks a reader on a phone to memorise it and type
+              it into another application, which is the interaction failing at
+              its last step. Optional, so a studio that has not uploaded a code
+              gets exactly the line it had before. */}
+          {contact.qr !== null && (
+            <Media
+              image={contact.qr}
+              locale={locale}
+              sizes={QR_SIZES}
+              className={styles.qr}
+            />
+          )}
+        </Fact>
         <Fact label={labels.hours}>{contact.hours[locale]}</Fact>
       </dl>
 

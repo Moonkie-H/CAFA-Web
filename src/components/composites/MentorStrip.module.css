@@ -96,10 +96,15 @@
 }
 
 /*
- * Two single lines, always, which is what keeps every caption the same height
- * and therefore every portrait the same height. Names and disciplines are short
- * by content design — the clip is a guard against one that is not, and it never
- * fires at the widths §9 asks for.
+ * A fixed number of lines, always, which is what keeps every caption the same
+ * height and therefore every portrait the same height — and therefore the
+ * strip's horizon and the scroll rule positioned off it.
+ *
+ * Four of them: the name, the discipline, and two for the note. The first two
+ * are short by content design and never wrap; the note is a sentence, so it is
+ * given room for two lines and clamped rather than clipped — a sentence cut off
+ * mid-word at the right edge reads as a bug, where one that fills two lines and
+ * ends in an ellipsis reads as a caption.
  */
 .caption {
   flex: 0 0 auto;
@@ -113,6 +118,29 @@
 
 .discipline {
   color: var(--c-ink-70);
+}
+
+/*
+ * Two lines, and the box is that tall whether or not the note fills it: a
+ * caption that changes height with the length of its sentence changes the
+ * height of the portrait above it, which is the one thing this file exists to
+ * prevent.
+ *
+ * Selected through .caption so it beats the single-line clip above it outright
+ * rather than by being further down the file — the name and the discipline
+ * still want that rule, and a tie settled by source order is a tie.
+ */
+.caption .note {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  block-size: calc(
+    var(--type-meta-size) * (var(--type-meta-leading) + var(--type-lang-leading-add)) * 2
+  );
+  color: var(--c-ink-70);
+  display: -webkit-box;
+  line-clamp: 2;
+  margin-block-start: var(--space-3xs);
+  white-space: normal;
 }
 
 /*
