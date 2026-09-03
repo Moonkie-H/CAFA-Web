@@ -99,6 +99,31 @@ export function getImage(src: string): ImageEntry {
 }
 
 /**
+ * The photograph's own URL against the media origin, named for its bytes.
+ *
+ * The `v` is the whole of the fix for a replaced photograph never appearing.
+ * An object key is stable across a replacement — `pages/home/01.jpg` keeps its
+ * name so the content record does not have to be rewritten — which meant the
+ * URL this built was byte for byte the one every cache between R2 and the
+ * reader already held an answer for, and the bucket serves an hour of freshness
+ * with no purge behind it. The studio replaced a photograph and the site went
+ * on showing the old one.
+ *
+ * So the URL now carries the digest the admin took of the bytes. Same bytes,
+ * same URL, and nothing re-downloads; different bytes, a URL nothing has seen
+ * before, and every cache misses on it exactly once. R2 ignores a query
+ * parameter it was not asked about, so this costs the origin nothing.
+ *
+ * Null for a photograph uploaded before the admin recorded a version, which
+ * asks for the bare URL — what this did before, for a photograph nobody has
+ * replaced since.
+ */
+function sourceUrl(entry: ImageEntry): string {
+  const url = `${base}/${entry.src}`;
+  return entry.version === null ? url : `${url}?v=${entry.version}`;
+}
+
+/**
  * Where a photograph is actually fetched from at a given width.
  *
  * `fit=scale-down` is what stops a 900px original being served at 1200: it
@@ -107,11 +132,17 @@ export function getImage(src: string): ImageEntry {
  *
  * With transforms off there is no width to ask for. The original is the only
  * thing in the bucket, and the URL is the key against the media origin.
+ *
+ * The version rides on the source half either way. Under `/cdn-cgi/image/` the
+ * source is a URL like any other and its query reaches the origin, and the edge
+ * keys the derivative on the whole request — so one digest busts the original
+ * and all five transforms of it.
  */
-function deliveryUrl(src: string, width: number): string {
-  if (!transforms) return `${base}/${src}`;
+function deliveryUrl(entry: ImageEntry, width: number): string {
+  const source = sourceUrl(entry);
+  if (!transforms) return source;
   const options = `width=${width},quality=${QUALITY},format=auto,fit=scale-down`;
-  return `/cdn-cgi/image/${options}/${base}/${src}`;
+  return `/cdn-cgi/image/${options}/${source}`;
 }
 
 export function variants(entry: ImageEntry): ImageVariant[] {
@@ -119,9 +150,9 @@ export function variants(entry: ImageEntry): ImageVariant[] {
   // width rather than at the ladder's steps: a srcset that offers 480w and
   // hands over 2400 pixels is a lie the browser plans its `sizes` around, and
   // it would pick the smallest candidate for every slot on the page.
-  if (!transforms) return [{ src: deliveryUrl(entry.src, entry.width), width: entry.width }];
+  if (!transforms) return [{ src: deliveryUrl(entry, entry.width), width: entry.width }];
 
   const cap = Math.min(entry.width, WIDTHS[WIDTHS.length - 1] ?? entry.width);
   const steps = [...new Set([...WIDTHS.filter((width) => width < cap), cap])];
-  return steps.map((width) => ({ src: deliveryUrl(entry.src, width), width }));
+  return steps.map((width) => ({ src: deliveryUrl(entry, width), width }));
 }

@@ -203,6 +203,8 @@ export interface PageText {
 
 export interface SitePages {
   home: PageText & { statement: LocalisedText; gallery: readonly ImageRef[] };
+  //   ^ the one string on the site whose newlines are load-bearing: the front page
+  //     renders it `white-space: pre-line`, so the studio breaks its own lines.
   works: PageText;            // the index is the works registry
   programs: PageText & { intro: readonly LocalisedText[] };
   about: PageText & {
@@ -542,7 +544,7 @@ they were uploaded and travel in the content bundle. `lib/media.ts` turns a key 
 into a URL:
 
 ```
-/cdn-cgi/image/width=768,quality=78,format=auto,fit=scale-down/<mediaBase>/<key>
+/cdn-cgi/image/width=768,quality=78,format=auto,fit=scale-down/<mediaBase>/<key>?v=<version>
 ```
 
 Cloudflare fetches the original, resizes it, encodes it, and caches the result. `format=auto`
@@ -550,6 +552,22 @@ picks AVIF or WebP from the request's `Accept` header, so one `srcset` replaces 
 `<source>` elements this used to need. `fit=scale-down` never enlarges, which is what makes
 the width ladder `[480, 768, 1200, 1800, 2400]` safe to apply to an original of any size —
 a 900px photograph yields 480 and 900, exactly as the old `targetWidths()` did.
+
+`?v=` is the one part of that URL that is not about resizing, and it is there because a
+key is *stable*. The studio replaces a photograph in place — `pages/home/01.jpg` keeps its
+name, so the record still points at it and no object is orphaned — which meant that for
+every cache between the bucket and the reader, nothing had happened: same URL, an hour of
+freshness on the object, and no purge anywhere in either repository. The photograph the
+studio replaced went on being served. Worse, the bundle described a photograph only by its
+dimensions and hue, so replacing one with a crop of the same size left the bundle
+byte-identical and the admin correctly reported that there was nothing to publish.
+
+So the admin takes a digest of the bytes on upload, publishes it in `media[key].version`,
+and `lib/media.ts` hangs it off the source URL. Same bytes, same URL, and nothing
+re-downloads; different bytes, a URL nothing has ever seen. R2 ignores a query parameter it
+was not asked about, and the edge keys the derivative on the whole request, so one digest
+busts the original and all five transforms of it at once. `version` is null for a
+photograph uploaded before the admin recorded one, and those keep the bare URL.
 
 **Unless the zone cannot transform.** Image Transformations are a zone setting on a paid
 plan; on a Free zone the toggle is an upgrade prompt, and every `/cdn-cgi/image/…` URL

@@ -107,6 +107,22 @@ function hue(value: unknown, at: string): number | null {
   return value;
 }
 
+/**
+ * A photograph's version, or null where the admin has none to give.
+ *
+ * Absent and null are one answer, for the same reason they are one answer for
+ * `tint`: a revision published before the admin recorded versions carries no
+ * such field, and the honest reading of that is "this photograph has no
+ * version", not "this bundle is malformed". It costs the cache-busting on
+ * photographs nobody has replaced since, and they get one the next time they
+ * are uploaded. A value that is *present and not a string* still fails the
+ * build.
+ */
+function name(value: unknown, at: string): string | null {
+  if (value === undefined || value === null) return null;
+  return text(value, at);
+}
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** A slug is part of a URL forever, so it is checked rather than trusted. */
@@ -438,6 +454,17 @@ export interface MediaFacts {
    * to tint the band behind the row under the pointer. DESIGN-SYSTEM.md §7.
    */
   tint: number | null;
+  /**
+   * A digest of the bytes currently filed under the key, or null for a
+   * photograph uploaded before the admin recorded one.
+   *
+   * An object key does not change when the studio replaces a photograph — that
+   * is what keeps the record pointing at it and the bucket free of orphans — so
+   * the key alone is not enough to name a URL by. lib/media hangs this off the
+   * delivery URL, which is what makes a replacement visible to a reader who has
+   * seen the page before.
+   */
+  version: string | null;
 }
 
 /**
@@ -458,7 +485,12 @@ export function parseMedia(value: unknown): Record<string, MediaFacts> {
     const width = whole(facts.width, `${at}.width`);
     const height = whole(facts.height, `${at}.height`);
     if (width <= 0 || height <= 0) fail(at, 'positive dimensions');
-    parsed[key] = { width, height, tint: hue(facts.tint, `${at}.tint`) };
+    parsed[key] = {
+      width,
+      height,
+      tint: hue(facts.tint, `${at}.tint`),
+      version: name(facts.version, `${at}.version`),
+    };
   }
 
   return parsed;
