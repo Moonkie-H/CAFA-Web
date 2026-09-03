@@ -38,13 +38,14 @@ export default async function HomePage({ params }: LocaleParams) {
           off, which is the same figure a navigation makes. It is the first thing
           on the site that moves, and it sets the vocabulary for the rest.
 
-          Set in `label`, the same role as the nav: the first screen is one line
-          of the same small type the bar is set in, centred in the empty page,
-          and nothing else. There is no link to the works index here because the
-          nav already carries one on every page including this one. */}
+          Set in `body`, centred in the empty page, and nothing else on the
+          screen. It is prose the studio writes and breaks itself — page.module
+          keeps the line breaks it types — rather than the one label-sized line
+          it began as. There is no link to the works index here because the nav
+          already carries one on every page including this one. */}
       <Recede>
         <Grid className={styles.above}>
-          <Text role="label" as="h1" className={styles.statement}>
+          <Text role="body" as="h1" className={styles.statement}>
             {home.statement[locale]}
           </Text>
         </Grid>

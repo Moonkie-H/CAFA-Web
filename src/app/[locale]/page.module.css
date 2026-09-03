@@ -31,15 +31,37 @@
 }
 
 /*
- * Set in the `label` role, so it needs no size of its own — only somewhere to
- * stop wrapping. --measure is a prose limit in ch, which at label size is a
+ * Set in the `body` role, so it needs no size of its own — only somewhere to
+ * stop wrapping. --measure is a prose limit in ch, which at body size is a
  * short centred block at every width, and is why this needs no breakpoint.
+ *
+ * It used to be set in `label`, at 11px with the nav's tracking, on the reading
+ * that the first screen should be one line of the same small type the bar is.
+ * That reading held while the statement *was* one line. It is prose the studio
+ * breaks where it wants now, and prose at 11px with the letters pushed apart is
+ * a caption of a statement rather than a statement.
+ *
+ * `pre-line` is what carries those breaks. The statement is a single string in
+ * the bundle — one field, typed into one box in CAFA-Admin — so where it breaks
+ * is where the studio pressed return, and collapsing that here would be the
+ * rendering disagreeing with the record. Runs of spaces still collapse and the
+ * line still wraps on its own when it is too long for --measure; only the
+ * newlines survive, which is exactly the amount of control being handed over.
+ *
+ * Descendant selector for the leading, not for specificity theatre: Text's own
+ * `.body` sets a line-height, and a single class in this file would depend on
+ * which stylesheet the bundler happened to emit second.
  */
 .statement {
   grid-column: 1 / -1;
   max-inline-size: var(--measure);
   text-align: center;
   text-wrap: balance;
+  white-space: pre-line;
+}
+
+.above .statement {
+  line-height: var(--type-statement-leading);
 }
 
 /* Outside the Grid, so it runs edge to edge. */

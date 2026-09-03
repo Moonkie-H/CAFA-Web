@@ -138,10 +138,18 @@ seventh role and no ad-hoc `font-size` anywhere.
 |---|---|---|---|---|---|
 | `display` | `clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem)` | 1.02 | −0.02em | 400 | Work title on detail |
 | `title` | `clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem)` | 1.15 | −0.012em | 400 | Section heads, programme names |
-| `body` | `clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)` | 1.62 | 0 | 400 | Prose |
+| `body` | `clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)` | 1.62 | 0 | 400 | Prose, and the home statement |
 | `index` | `0.8125rem` (13px) | 1.7 | 0 | 400 | The works list rows — fixed, not fluid |
 | `meta` | `0.6875rem` (11px) | 1.55 | 0.01em | 400 | Credits, status, captions |
-| `label` | `0.6875rem` (11px) | 1 | 0.09em | 500 | Nav, gutter labels, buttons, the home statement |
+| `label` | `0.6875rem` (11px) | 1 | 0.09em | 500 | Nav, gutter labels, buttons |
+
+The home statement moved from `label` to `body`, and it is the one row of this table
+that has changed since it was written. Setting it in the nav's type said the first screen
+was one line of the same small type the bar is — true while it *was* one line. It is prose
+the studio breaks where it likes now, and 11px with 0.09em of tracking makes a caption of
+a statement rather than a statement. It keeps `body`'s size and tracking and takes its own
+leading, `--type-statement-leading`, because paragraph leading opens hand-broken lines into
+unrelated ones; that token is a single property on a single page, not a seventh role.
 
 `index` and `meta` stay fixed rather than fluid: at these sizes fluid scaling either breaks
 the 44 px touch floor on mobile or bloats absurdly at 2560 px. They step once at the `sm`
@@ -157,8 +165,8 @@ CJK adjustment: Chinese needs more leading and no negative tracking. `:lang(zh)`
 
 **No role applies a `text-transform`, and `label` is the one that had to lose it.** It was
 set in capitals to borrow big.dk's gutter labelling, and the borrowing was one step too
-literal: every string a label renders — a nav item, a section heading, the home statement —
-is typed into CAFA-Admin, so the transform made the page disagree with the record and gave
+literal: every string a label renders — a nav item, a section heading — is typed into
+CAFA-Admin, so the transform made the page disagree with the record and gave
 the studio no way to write a lower-case title, or a name that is only capitalised in one
 place. Case is content. The tracking and the size are what make a label read as one; those
 stay, and anything meant to be shouted is typed that way.

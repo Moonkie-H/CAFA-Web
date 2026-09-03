@@ -86,6 +86,20 @@
    */
   --type-field-size: max(1rem, var(--type-body-size));
 
+  /*
+   * Also not a seventh role. The front page statement is set in `body` like any
+   * other prose; this is only its leading, and it exists because the statement
+   * is the one piece of copy on the site whose line breaks the studio types
+   * itself. Paragraph leading is tuned for a block of wrapped prose — at 1.62,
+   * and 1.74 in Chinese, two deliberately broken lines drift apart into two
+   * unrelated sentences instead of reading as one held statement. 1.5 is what
+   * the studio asked for and what keeps them together.
+   *
+   * Flat, with no `--type-lang-leading-add`: the number was chosen looking at
+   * the Chinese front page, so raising it again there would undo the choice.
+   */
+  --type-statement-leading: 1.5;
+
   /* §4 Space — 8px base with a fluid multiplier. Nine steps, no more. */
   --space-3xs: 0.25rem; /*  4 */
   --space-2xs: 0.5rem; /*  8 */
