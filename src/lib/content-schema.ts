@@ -70,6 +70,21 @@ function filled(value: unknown, at: string): string {
   return found;
 }
 
+/**
+ * A URL something posts to, or null where there is none.
+ *
+ * Null, absent and empty are one answer — a site whose admin has not been told
+ * its own origin, or a revision published before the field existed — and it is
+ * not a failure: the card falls back to handing the reader a `mailto:` draft,
+ * which is what it did before there was anywhere to post. A value that is
+ * present and not a string is a different matter, and fails the build.
+ */
+function endpoint(value: unknown, at: string): string | null {
+  if (value === null || value === undefined) return null;
+  const found = text(value, at);
+  return found.trim() === '' ? null : found;
+}
+
 function whole(value: unknown, at: string): number {
   if (typeof value !== 'number' || !Number.isInteger(value)) fail(at, 'a whole number');
   return value;
@@ -402,6 +417,10 @@ function parseDictionary(value: unknown, locale: string): Dictionary {
       message: contact('message'),
       subject: contact('subject'),
       send: contact('send'),
+      sending: contact('sending'),
+      sent: contact('sent'),
+      failed: contact('failed'),
+      draft: contact('draft'),
     },
     notFound: { title: notFound('title'), body: notFound('body'), home: notFound('home') },
     footer: { note: footer('note') },
@@ -448,6 +467,15 @@ export function parseMedia(value: unknown): Record<string, MediaFacts> {
 export interface ContentBundle {
   /** The published revision this build came from. 0 for a draft preview. */
   revision: number;
+  /**
+   * Where the contact card posts a message, or null where it has nowhere to.
+   *
+   * A fact about the deployment rather than about the content — it is the
+   * admin's own origin plus its contact path — and it travels in the bundle for
+   * the same reason `mediaBase` does: a browser needs it, and a second
+   * environment variable on this side is a second place for it to be wrong.
+   */
+  contactEndpoint: string | null;
   site: SiteContent;
   pages: SitePages;
   works: Work[];
@@ -470,6 +498,7 @@ export function parseBundle(value: unknown): ContentBundle {
 
   return {
     revision: whole(record.revision, 'bundle.revision'),
+    contactEndpoint: endpoint(record.contactEndpoint, 'bundle.contactEndpoint'),
     site: parseSite(record.site),
     pages: parsePages(record.pages),
     works: parseWorks(record.works),

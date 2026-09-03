@@ -11,7 +11,15 @@ import { PinnedNote } from '@/components/motion/PinnedNote';
 import { ScrollField } from '@/components/motion/ScrollField';
 import { ScrollTicks } from '@/components/motion/ScrollTicks';
 import { Text } from '@/components/primitives/Text';
-import { getDictionary, getNav, getPage, getSite, getWorks, requireLocale } from '@/lib/content';
+import {
+  getContactEndpoint,
+  getDictionary,
+  getNav,
+  getPage,
+  getSite,
+  getWorks,
+  requireLocale,
+} from '@/lib/content';
 import { sectionSegment, type NavContext } from '@/lib/nav-intent';
 import { panels, routes } from '@/lib/routes';
 
@@ -129,7 +137,12 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           label={dictionary.contact.title}
           closeLabel={dictionary.a11y.close}
         >
-          <ContactBlock site={site} locale={locale} labels={dictionary.contact} />
+          <ContactBlock
+            site={site}
+            locale={locale}
+            endpoint={getContactEndpoint()}
+            labels={dictionary.contact}
+          />
         </PinnedNote>
       </body>
     </html>

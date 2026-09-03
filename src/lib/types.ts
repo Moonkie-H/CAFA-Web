@@ -254,11 +254,33 @@ export interface Dictionary {
     hours: string;
     note: string;
     /** The message form. `from` and `message` name the two fields; `subject` is
-        the line the reader's mail client opens with, so it is copy too. */
+        the line the message arrives under in the studio's inbox — and the line
+        a `mailto:` draft opens with, on the paths where it is one. */
     from: string;
     message: string;
     subject: string;
     send: string;
+    /**
+     * The form in its other three states, and the way out of the third.
+     *
+     * While Send only composed a `mailto:` there was nothing to wait for and
+     * nothing that could fail: the reader's own mail client took over and the
+     * card was done. A form that posts has a mid-flight, a done and a failed,
+     * and a card that does not say which of the three it is in is a card that
+     * looks broken while it is working.
+     *
+     * `failed` is the fallback rather than the usual case: a refusal from the
+     * admin carries its own sentence for whoever typed the message — that is
+     * not an address, that domain receives no mail, that is a lot of messages
+     * at once — and the card shows that instead. This is what is said when the
+     * admin could not be reached at all and there is nothing to relay. `draft`
+     * labels the offer of a `mailto:` afterwards, so a failure is never a dead
+     * end.
+     */
+    sending: string;
+    sent: string;
+    failed: string;
+    draft: string;
   };
   notFound: { title: string; body: string; home: string };
   footer: { note: string };

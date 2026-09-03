@@ -57,6 +57,18 @@ export function getSite(): SiteContent {
   return site;
 }
 
+/**
+ * Where the contact card posts a message, or null where it has nowhere to.
+ *
+ * The layout reads it and hands it down, because a composite is given its data
+ * rather than reaching for it — CLAUDE.md §3. Null is not an error state: it is
+ * an admin that has not been told its own origin, and the card answers it by
+ * composing a `mailto:` draft the way it always did.
+ */
+export function getContactEndpoint(): string | null {
+  return content.contactEndpoint;
+}
+
 export function getDictionary(locale: Locale): Dictionary {
   return dictionaries[locale];
 }

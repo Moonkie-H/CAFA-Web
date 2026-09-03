@@ -357,6 +357,15 @@ Rules that make it feel like the references rather than a template:
 - **Submit:** a `label` role under the same underline, `--c-ink-70` to `--c-ink` over
   `--dur-fast` — the nav's treatment, never `--c-mark`. The highlighter marks a label that
   goes somewhere, and submitting is not navigating; §2's bound is the job, not the surface.
+  In flight it takes `--c-ink-62` and stops being pressable; the word changes, the layout
+  does not.
+- **What the card answers with:** one `index`-role line under the form at `--c-ink-70` — the
+  note at the top of the card is the same size, because both are the card talking rather
+  than labelling. It is a live region that is empty until there is something to say and
+  takes no room while it is, so nothing is held open under the button from first paint. The
+  one thing under it that goes somewhere — the offer of a mail-client draft after a failure
+  — carries the address's underline and its hover, because it is a link and everything else
+  there is prose.
 - **Focus:** `--focus-ring` on `:focus-visible` only, never suppressed.
 - **Disabled / private:** `--c-ink-45`, `cursor: default`, not a link at all.
 
