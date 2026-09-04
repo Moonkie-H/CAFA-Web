@@ -13,7 +13,7 @@ import '@/styles/globals.css';
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang={getSite().locales[0]}>
+    <html lang={getSite().locales[0]} data-type-scale={getSite().typeScale}>
       <body>{children}</body>
     </html>
   );

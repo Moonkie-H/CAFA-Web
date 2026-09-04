@@ -87,7 +87,11 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const dictionary = getDictionary(locale);
 
   return (
-    <html lang={locale}>
+    // data-type-scale carries the studio's type step out of the bundle and onto
+    // the element every token is declared against. An attribute rather than an
+    // inline custom property, so the two multipliers stay in tokens.css with
+    // every other measurement — see the rules it selects there.
+    <html lang={locale} data-type-scale={getSite().typeScale}>
       <head>
         {/* Only the Latin face is preloaded: it sets every page. latin-ext and the
             CJK files are left to unicode-range to fetch if a page needs them. */}

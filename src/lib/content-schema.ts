@@ -36,6 +36,7 @@ import {
   type Project,
   type SiteContent,
   type SitePages,
+  type TypeScale,
   type Work,
   type WorkStatus,
 } from './types';
@@ -107,6 +108,42 @@ function hue(value: unknown, at: string): number | null {
   return value;
 }
 
+/**
+ * A photograph's version, or null where the admin has none to give.
+ *
+ * Absent and null are one answer, for the same reason they are one answer for
+ * `tint`: a revision published before the admin recorded versions carries no
+ * such field, and the honest reading of that is "this photograph has no
+ * version", not "this bundle is malformed". It costs the cache-busting on
+ * photographs nobody has replaced since, and they get one the next time they
+ * are uploaded. A value that is *present and not a string* still fails the
+ * build.
+ */
+function name(value: unknown, at: string): string | null {
+  if (value === undefined || value === null) return null;
+  return text(value, at);
+}
+
+/**
+ * The ladder for one photograph: whole numbers, ascending, none of them as wide
+ * as the photograph itself.
+ *
+ * Absent is an empty ladder, for the same reason absent is a null version — a
+ * revision published before the admin wrote ladders has no such field, and the
+ * honest reading is "this photograph has only its original". A rung at or above
+ * the original's width is dropped rather than failing the build: it would put a
+ * candidate in the `srcset` promising pixels the file does not have, and the
+ * browser plans its `sizes` around the promise. Anything that is not a list of
+ * numbers is a malformed bundle and still stops the build.
+ */
+function rungs(value: unknown, at: string, width: number): number[] {
+  if (value === undefined || value === null) return [];
+  const found = each(value, at, (item, rung) => whole(item, rung));
+  return [...new Set(found.filter((rung) => rung > 0 && rung < width))].sort(
+    (first, second) => first - second,
+  );
+}
+
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** A slug is part of a URL forever, so it is checked rather than trusted. */
@@ -160,6 +197,8 @@ function image(value: unknown, at: string): ImageRef {
 }
 
 const STATUSES: readonly WorkStatus[] = ['completed', 'in-progress', 'private'];
+
+const SCALES: readonly TypeScale[] = ['normal', 'large', 'larger'];
 
 function status(value: unknown, at: string): WorkStatus {
   const found = STATUSES.find((known) => known === value);
@@ -356,8 +395,29 @@ function parseSite(value: unknown): SiteContent {
       wechat: filled(contact.wechat, 'site.contact.wechat'),
       address: localised(contact.address, 'site.contact.address'),
       hours: localised(contact.hours, 'site.contact.hours'),
+      // Absent and null are one answer, as they are for `tint` and `version`: a
+      // studio with no QR code, and a revision published before there was a
+      // field for one. Both draw the card without it.
+      qr:
+        contact.qr === undefined || contact.qr === null
+          ? null
+          : image(contact.qr, 'site.contact.qr'),
     },
+    typeScale: scale(record.typeScale, 'site.typeScale'),
   };
+}
+
+/**
+ * The site's type step. Absent is `normal`, which is the size every revision
+ * published before the control existed was set at; anything present that is not
+ * one of the three fails the build rather than silently reading as normal,
+ * because a value nobody recognises is a bundle that disagrees with this file.
+ */
+function scale(value: unknown, at: string): TypeScale {
+  if (value === undefined || value === null) return 'normal';
+  const found = SCALES.find((known) => known === value);
+  if (found === undefined) fail(at, SCALES.join(' | '));
+  return found;
 }
 
 function parseDictionary(value: unknown, locale: string): Dictionary {
@@ -438,6 +498,30 @@ export interface MediaFacts {
    * to tint the band behind the row under the pointer. DESIGN-SYSTEM.md §7.
    */
   tint: number | null;
+  /**
+   * A digest of the bytes currently filed under the key, or null for a
+   * photograph uploaded before the admin recorded one.
+   *
+   * An object key does not change when the studio replaces a photograph — that
+   * is what keeps the record pointing at it and the bucket free of orphans — so
+   * the key alone is not enough to name a URL by. lib/media hangs this off the
+   * delivery URL, which is what makes a replacement visible to a reader who has
+   * seen the page before.
+   */
+  version: string | null;
+  /**
+   * The narrower copies of this photograph that are in the bucket, ascending.
+   *
+   * This zone cannot transform, so nothing resizes a photograph between the
+   * bucket and the reader and these are the only other sizes there are. The
+   * admin writes them at upload, from the browser that is already decoding the
+   * photograph to resize it; `lib/media` turns each into a `srcset` candidate.
+   *
+   * Empty is a photograph uploaded before the ladder existed, and it means the
+   * original is the only candidate — which is what the site built for every
+   * photograph before this field, and why phones were handed 2400px files.
+   */
+  widths: number[];
 }
 
 /**
@@ -458,7 +542,13 @@ export function parseMedia(value: unknown): Record<string, MediaFacts> {
     const width = whole(facts.width, `${at}.width`);
     const height = whole(facts.height, `${at}.height`);
     if (width <= 0 || height <= 0) fail(at, 'positive dimensions');
-    parsed[key] = { width, height, tint: hue(facts.tint, `${at}.tint`) };
+    parsed[key] = {
+      width,
+      height,
+      tint: hue(facts.tint, `${at}.tint`),
+      version: name(facts.version, `${at}.version`),
+      widths: rungs(facts.widths, `${at}.widths`, width),
+    };
   }
 
   return parsed;

@@ -203,8 +203,34 @@ export interface SiteContent {
     wechat: string;
     address: LocalisedText;
     hours: LocalisedText;
+    /**
+     * The WeChat QR code, or null where the studio has not uploaded one.
+     *
+     * The only optional image in the content, and the only one that belongs to
+     * no record. Null is a card that prints the id and nothing else, which is
+     * what the card was before — so the branch is "is there a code", never "is
+     * there a file at this key".
+     */
+    qr: ImageRef | null;
   };
+  /** How large the site sets its type. See TypeScale. */
+  typeScale: TypeScale;
 }
+
+/**
+ * The site's type size, as a step on its own scale rather than a size.
+ *
+ * The studio asked for a font-size control like Word's. Word's answer — any
+ * number of points on any run of text — is the one thing the design cannot
+ * offer: the six roles in DESIGN-SYSTEM.md §3 are what make the pages look like
+ * one site, and CLAUDE.md §9 forbids a component inventing a size outside them.
+ * A single step that moves all six together keeps every one of those rules and
+ * still answers the request.
+ *
+ * It only goes up. `index`, `meta` and `label` already sit on §9's carve-out
+ * floor, so down is the one direction they may not move.
+ */
+export type TypeScale = 'normal' | 'large' | 'larger';
 
 /**
  * UI copy — the strings that belong to the *interface* rather than to a page.

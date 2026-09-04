@@ -203,6 +203,8 @@ export interface PageText {
 
 export interface SitePages {
   home: PageText & { statement: LocalisedText; gallery: readonly ImageRef[] };
+  //   ^ the one string on the site whose newlines are load-bearing: the front page
+  //     renders it `white-space: pre-line`, so the studio breaks its own lines.
   works: PageText;            // the index is the works registry
   programs: PageText & { intro: readonly LocalisedText[] };
   about: PageText & {
@@ -542,7 +544,7 @@ they were uploaded and travel in the content bundle. `lib/media.ts` turns a key 
 into a URL:
 
 ```
-/cdn-cgi/image/width=768,quality=78,format=auto,fit=scale-down/<mediaBase>/<key>
+/cdn-cgi/image/width=768,quality=78,format=auto,fit=scale-down/<mediaBase>/<key>?v=<version>
 ```
 
 Cloudflare fetches the original, resizes it, encodes it, and caches the result. `format=auto`
@@ -551,21 +553,59 @@ picks AVIF or WebP from the request's `Accept` header, so one `srcset` replaces 
 the width ladder `[480, 768, 1200, 1800, 2400]` safe to apply to an original of any size —
 a 900px photograph yields 480 and 900, exactly as the old `targetWidths()` did.
 
+`?v=` is the one part of that URL that is not about resizing, and it is there because a
+key is *stable*. The studio replaces a photograph in place — `pages/home/01.jpg` keeps its
+name, so the record still points at it and no object is orphaned — which meant that for
+every cache between the bucket and the reader, nothing had happened: same URL, an hour of
+freshness on the object, and no purge anywhere in either repository. The photograph the
+studio replaced went on being served. Worse, the bundle described a photograph only by its
+dimensions and hue, so replacing one with a crop of the same size left the bundle
+byte-identical and the admin correctly reported that there was nothing to publish.
+
+So the admin takes a digest of the bytes on upload, publishes it in `media[key].version`,
+and `lib/media.ts` hangs it off the source URL. Same bytes, same URL, and nothing
+re-downloads; different bytes, a URL nothing has ever seen. R2 ignores a query parameter it
+was not asked about, and the edge keys the derivative on the whole request, so one digest
+busts the original and all five transforms of it at once. `version` is null for a
+photograph uploaded before the admin recorded one, and those keep the bare URL.
+
 **Unless the zone cannot transform.** Image Transformations are a zone setting on a paid
 plan; on a Free zone the toggle is an upgrade prompt, and every `/cdn-cgi/image/…` URL
 answers with something that is not an image — a site that builds, deploys and renders with
 every photograph broken, reporting nothing. The admin knows which it is (it is the
 `MEDIA_TRANSFORM` var, and `npm run media` over there checks it against the real zone) and
-says so in the bundle as `mediaTransform`. When it is false, `lib/media.ts` points every
-`<img>` at `<mediaBase>/<key>` — the original, at the 2400px the browser downscaled it to
-on upload — and the `srcset` carries one candidate at that intrinsic width rather than a
-ladder of five URLs that all resolve to the same file.
+says so in the bundle as `mediaTransform`. It is currently **false**, so this is the path
+the live site is actually on.
 
-That is a deliberate, temporary derogation from CLAUDE.md §7, and it is the smaller of two
-failures: a heavy page against no page at all. The compliant state is a zone on a plan that
-transforms — turn Images → Transformations on, drop `MEDIA_TRANSFORM` from the admin's
-`wrangler.jsonc`, redeploy and publish once, and the ladder comes back with no change
-here.
+It used to mean the `srcset` carried one candidate, at the original's own 2400px, for every
+device. That was described here as a heavy page and nothing worse, and it was wrong: a
+phone was being handed the full-size original of every photograph on the page, and a page
+of those is where a mobile browser stops decoding and draws a broken image. Photographs did
+not appear on mobile at all.
+
+So the ladder is built at upload instead of on delivery. The browser doing the uploading has
+already decoded the photograph in order to resize it — a Worker has no decoder and there is
+no sharp here or there — so it writes the narrower copies in the same pass and files each
+under the original's key with a `derived/<width>/` prefix:
+
+```
+<mediaBase>/derived/768/works/edible-house/01.jpg?v=<version>
+```
+
+The widths it wrote travel in the bundle as `media[key].widths`, and `variants()` turns them
+into candidates. So `mediaTransform` now decides *which* ladder a page uses, not whether it
+has one: the markup, the `sizes` and the CLS behaviour are identical either way, and
+CLAUDE.md §7's "one `srcset` + `sizes` on every image" holds on both. Widths are ascending
+and always narrower than the original, which is the last rung — a candidate declared wider
+than the file behind it is a lie the browser plans its `sizes` around.
+
+A photograph uploaded before the ladder existed publishes `widths: []` and still gets the
+single full-size candidate. The admin's **General → Photograph sizes** backfills those in
+one pass without re-encoding the originals, so no version moves and no URL changes.
+
+The compliant-and-cheaper state is still a zone that transforms — turn Images →
+Transformations on, drop `MEDIA_TRANSFORM` from the admin's `wrangler.jsonc`, redeploy and
+publish once, and the `/cdn-cgi/image/` ladder comes back with no change here.
 
 `MediaFrame.tsx` emits:
 

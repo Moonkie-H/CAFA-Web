@@ -36,8 +36,9 @@ interface MentorStripProps {
  * read across is the one thing on it that is a group rather than a list.
  *
  * A face without a name is decoration, so every plate carries one: the portrait,
- * then who it is and what they work in. That caption is the whole difference
- * between this and a contact sheet, and it is why the plate is a <figure>.
+ * then who it is, what they work in, and the line the studio wrote about them.
+ * That caption is the whole difference between this and a contact sheet, and it
+ * is why the plate is a <figure>.
  *
  * It is not Gallery. That one is a full-bleed vertical column of photographs,
  * one at a time with a lot of paper between them; this is a single row of
@@ -81,6 +82,13 @@ export function MentorStrip({
                 </Text>
                 <Text role="meta" className={styles.discipline}>
                   {mentor.discipline[locale]}
+                </Text>
+                {/* The line the studio writes about each person, which until now
+                    was a required field on the record with nowhere on the site
+                    to appear. A face and a discipline is a contact sheet; the
+                    sentence is what makes the plate a caption. */}
+                <Text role="meta" className={styles.note}>
+                  {mentor.note[locale]}
                 </Text>
               </figcaption>
             </figure>

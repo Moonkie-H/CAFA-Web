@@ -25,7 +25,14 @@ main:has([data-page-close]) + .footer {
   padding-block-end: max(var(--space-l), env(safe-area-inset-bottom));
 }
 
+/*
+ * One line, or two if the studio writes two. It is the only copy on the page at
+ * this point and it is centred, so a break in it is a deliberate shape rather
+ * than an accident of the viewport — `pre-line` is what lets that be decided in
+ * the admin instead of here. See ContactBlock.module.css's .factValue.
+ */
 .note {
   grid-column: 1 / -1;
   text-align: center;
+  white-space: pre-line;
 }
