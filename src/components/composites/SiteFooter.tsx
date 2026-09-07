@@ -1,5 +1,5 @@
 import { Grid } from '@/components/primitives/Grid';
-import { Text } from '@/components/primitives/Text';
+import { Prose } from '@/components/primitives/Prose';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import type { Dictionary } from '@/lib/types';
 
@@ -20,9 +20,7 @@ export function SiteFooter({ dictionary }: SiteFooterProps) {
     // three columns of text doing the work of none.
     <footer className={styles.footer} {...sceneAttrs(scenes.footer)}>
       <Grid className={styles.inner}>
-        <Text role="meta" className={styles.note}>
-          {dictionary.footer.note}
-        </Text>
+        <Prose role="meta" value={dictionary.footer.note} className={styles.note} />
       </Grid>
     </footer>
   );

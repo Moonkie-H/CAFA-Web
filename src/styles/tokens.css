@@ -98,6 +98,20 @@
   --type-label-weight: 500;
 
   /*
+   * The weight a word takes when the studio bolds it. Also not a seventh role:
+   * it changes no size and only ever applies inside a run of prose.
+   *
+   * 500 rather than 700, and that is a fact about the font files rather than a
+   * preference. Both faces are shipped as variable cuts instrumented from 400
+   * to 500 — see fonts.css and scripts/subset-fonts.py — so 500 is the heaviest
+   * real weight on the site, and asking for 700 would either clamp back to this
+   * or be synthesised, which globals.css switches off because a faux weight on
+   * a half-loaded CJK face is worse than no emphasis at all. A heavier bold is
+   * a re-subset of four font binaries, not a number changed here.
+   */
+  --type-weight-strong: 500;
+
+  /*
    * Not a seventh role, and it sets no display type: it is the size a *control*
    * a reader types into has to be, because iOS Safari zooms the viewport when a
    * focused field measures under 16px. On a card that is already an overlay

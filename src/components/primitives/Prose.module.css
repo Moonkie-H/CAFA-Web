@@ -1,0 +1,55 @@
+/*
+ * What the studio's four controls come to on the page.
+ *
+ * Two of the four are here and two are not, which is the point: a line's
+ * alignment is a `text-align` and cannot be anything else, while a line's *size*
+ * is a step to another of the six type roles, so Prose hands that line to Text
+ * and this file never names a size. There is no font-size in this stylesheet
+ * and there should never be one.
+ */
+
+.line {
+  display: block;
+}
+
+/*
+ * Logical, not physical. Both locales run left to right today, so `start` and
+ * `left` are the same pixel — but the studio's word for it is "left" and the
+ * page's rule for it is "wherever this text begins", and it costs nothing to
+ * write the second one.
+ */
+.left {
+  text-align: start;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: end;
+}
+
+/*
+ * The bold weight is the token rather than the browser's `bolder`, which
+ * resolves to 700 — a weight neither shipped face has. See --type-weight-strong.
+ */
+.prose strong {
+  font-weight: var(--type-weight-strong);
+}
+
+/*
+ * And italic is the one place on the site that asks for a synthesised face.
+ *
+ * globals.css turns synthesis off entirely, for the right reason: a faux 500 on
+ * a CJK face that has not finished loading is a page that changes weight under
+ * the reader. But neither face ships an italic cut — a second pair of binaries
+ * is the whole font budget again — so with synthesis off an emphasised word is
+ * emphasised by nothing at all, which is a control the studio can press with no
+ * effect. `style` re-enables exactly the one kind, on exactly the element that
+ * asks for it, and leaves the weight rule alone.
+ */
+.prose em {
+  font-style: italic;
+  font-synthesis: style;
+}

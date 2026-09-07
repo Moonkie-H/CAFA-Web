@@ -1,4 +1,5 @@
 import { itemClass } from '@/components/motion/Part';
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import { cx } from '@/lib/class-names';
@@ -84,9 +85,7 @@ export function ProgramList({ programs, locale, className }: ProgramListProps) {
                 {program.duration[locale]}
               </Text>
             </div>
-            <Text role="body" className={styles.summary}>
-              {program.summary[locale]}
-            </Text>
+            <Prose role="body" value={program.summary[locale]} className={styles.summary} />
           </article>
         </li>
       ))}

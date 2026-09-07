@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Media } from '@/components/primitives/Media';
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import type { Dictionary, Locale, SiteContent } from '@/lib/types';
 
@@ -61,33 +62,44 @@ export function ContactBlock({ site, locale, endpoint, labels }: ContactBlockPro
     <div className={styles.block}>
       {/* First in the DOM at every width, which is also what lets it be the one
           element that reserves PinnedNote's close mark its corner. */}
-      <Text role="index" as="p" className={styles.note}>
-        {labels.note}
-      </Text>
+      <Prose role="index" as="p" value={labels.note} className={styles.note} />
 
       <dl className={styles.facts}>
         <Fact label={labels.email}>
-          <a href={`mailto:${contact.email}`} className={styles.link}>
-            {contact.email}
-          </a>
+          <Value>
+            <a href={`mailto:${contact.email}`} className={styles.link}>
+              {contact.email}
+            </a>
+          </Value>
         </Fact>
-        <Fact label={labels.address}>{contact.address[locale]}</Fact>
+        {/* The address and the hours are prose the studio writes, so they are
+            the two facts here that carry their own line breaks and their own
+            formatting — and the line breaks are the fix: the admin has always
+            told the studio the card keeps the returns it types, and until Prose
+            drew each line as its own block, nothing did. */}
+        <Fact label={labels.address}>
+          <Prose role="meta" as="dd" value={contact.address[locale]} className={styles.factValue} />
+        </Fact>
         <Fact label={labels.wechat}>
-          {contact.wechat}
-          {/* The id on its own asks a reader on a phone to memorise it and type
-              it into another application, which is the interaction failing at
-              its last step. Optional, so a studio that has not uploaded a code
-              gets exactly the line it had before. */}
-          {contact.qr !== null && (
-            <Media
-              image={contact.qr}
-              locale={locale}
-              sizes={QR_SIZES}
-              className={styles.qr}
-            />
-          )}
+          <Value>
+            {contact.wechat}
+            {/* The id on its own asks a reader on a phone to memorise it and
+                type it into another application, which is the interaction
+                failing at its last step. Optional, so a studio that has not
+                uploaded a code gets exactly the line it had before. */}
+            {contact.qr !== null && (
+              <Media
+                image={contact.qr}
+                locale={locale}
+                sizes={QR_SIZES}
+                className={styles.qr}
+              />
+            )}
+          </Value>
         </Fact>
-        <Fact label={labels.hours}>{contact.hours[locale]}</Fact>
+        <Fact label={labels.hours}>
+          <Prose role="meta" as="dd" value={contact.hours[locale]} className={styles.factValue} />
+        </Fact>
       </dl>
 
       <ContactForm endpoint={endpoint} to={contact.email} locale={locale} labels={labels} />
@@ -95,15 +107,30 @@ export function ContactBlock({ site, locale, endpoint, labels }: ContactBlockPro
   );
 }
 
+/**
+ * A fact is its name and its value, and the `<dd>` belongs to the caller.
+ *
+ * It used to wrap `children` in the value itself, which was fine while every
+ * fact was a string. Two of them are prose the studio formats now, and those
+ * draw their own `<dd>` through Prose — so what is common is the row and the
+ * `<dt>`, and `Value` is the ordinary `<dd>` for the two that are not prose.
+ * WorkMetaPanel splits the same pair the same way, for the same reason.
+ */
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className={styles.fact}>
       <Text role="label" as="dt" className={styles.factLabel}>
         {label}
       </Text>
-      <Text role="meta" as="dd" className={styles.factValue}>
-        {children}
-      </Text>
+      {children}
     </div>
+  );
+}
+
+function Value({ children }: { children: ReactNode }) {
+  return (
+    <Text role="meta" as="dd" className={styles.factValue}>
+      {children}
+    </Text>
   );
 }

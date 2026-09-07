@@ -4,7 +4,7 @@ import { PageHeading } from '@/components/composites/PageHeading';
 import { ProgramList } from '@/components/composites/ProgramList';
 import { partClass } from '@/components/motion/Part';
 import { Grid } from '@/components/primitives/Grid';
-import { Text } from '@/components/primitives/Text';
+import { Prose } from '@/components/primitives/Prose';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import { cx } from '@/lib/class-names';
 import { getPage, getPrograms, requireLocale } from '@/lib/content';
@@ -35,9 +35,7 @@ export default async function ProgramsPage({ params }: LocaleParams) {
         {page.intro.map((paragraph, at) => (
           // Position is a paragraph's only identity: it has no key of its own,
           // and two of them are allowed to read the same.
-          <Text key={at} role="body">
-            {paragraph[locale]}
-          </Text>
+          <Prose key={at} role="body" value={paragraph[locale]} />
         ))}
       </div>
       {/* The page's `listing` part: the sheet a lateral navigation exchanges

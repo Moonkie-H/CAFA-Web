@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import type { Dictionary, Locale, Work } from '@/lib/types';
 
@@ -38,9 +39,7 @@ export function WorkMetaPanel({ work, locale, labels, statusLabel }: WorkMetaPan
         </Fact>
       </dl>
 
-      <Text role="body" className={styles.summary}>
-        {work.summary[locale]}
-      </Text>
+      <Prose role="body" value={work.summary[locale]} className={styles.summary} />
 
       {work.credits.length > 0 && (
         <dl className={styles.facts}>

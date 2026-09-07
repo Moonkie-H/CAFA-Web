@@ -4,7 +4,7 @@ import { Gallery } from '@/components/composites/Gallery';
 import { Recede } from '@/components/motion/Recede';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Grid } from '@/components/primitives/Grid';
-import { Text } from '@/components/primitives/Text';
+import { Prose } from '@/components/primitives/Prose';
 import { getPage, requireLocale } from '@/lib/content';
 import { organisationJsonLd } from '@/lib/json-ld';
 import { pageMetadata } from '@/lib/metadata';
@@ -39,15 +39,14 @@ export default async function HomePage({ params }: LocaleParams) {
           on the site that moves, and it sets the vocabulary for the rest.
 
           Set in `body`, centred in the empty page, and nothing else on the
-          screen. It is prose the studio writes and breaks itself — page.module
-          keeps the line breaks it types — rather than the one label-sized line
-          it began as. There is no link to the works index here because the nav
-          already carries one on every page including this one. */}
+          screen. It is prose the studio writes, breaks and formats itself —
+          Prose draws each line it typed as its own block, and carries whatever
+          it bolded, set larger or pushed off centre — rather than the one
+          label-sized line it began as. There is no link to the works index here
+          because the nav already carries one on every page including this one. */}
       <Recede>
         <Grid className={styles.above}>
-          <Text role="body" as="h1" className={styles.statement}>
-            {home.statement[locale]}
-          </Text>
+          <Prose role="body" as="h1" value={home.statement[locale]} className={styles.statement} />
         </Grid>
       </Recede>
       {/* Genuinely below the fold — see .above — so these stay lazy and the
