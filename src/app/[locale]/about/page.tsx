@@ -5,7 +5,7 @@ import { PageHeading } from '@/components/composites/PageHeading';
 import { ProjectGrid } from '@/components/composites/ProjectGrid';
 import { partClass } from '@/components/motion/Part';
 import { Grid } from '@/components/primitives/Grid';
-import { Text } from '@/components/primitives/Text';
+import { Prose } from '@/components/primitives/Prose';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import { cx } from '@/lib/class-names';
 import { getMentors, getPage, getProjects, requireLocale } from '@/lib/content';
@@ -42,9 +42,7 @@ export default async function AboutPage({ params }: LocaleParams) {
             paragraph, which is the unit the content is actually authored in. */}
         <div className={cx(styles.prose, partClass('intro'))} {...sceneAttrs(scenes.prose)}>
           {page.intro.map((paragraph, at) => (
-            <Text key={at} role="body">
-              {paragraph[locale]}
-            </Text>
+            <Prose key={at} role="body" value={paragraph[locale]} />
           ))}
         </div>
       </Grid>

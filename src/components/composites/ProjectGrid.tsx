@@ -2,6 +2,7 @@ import { Focus } from '@/components/motion/Focus';
 import { Parallax } from '@/components/motion/Parallax';
 import { itemClass } from '@/components/motion/Part';
 import { Media } from '@/components/primitives/Media';
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import { cx } from '@/lib/class-names';
@@ -95,9 +96,7 @@ export function ProjectGrid({ projects, locale, heading, className }: ProjectGri
                 <Text role="index" as="h3">
                   {project.title[locale]}
                 </Text>
-                <Text role="meta" className={styles.summary}>
-                  {project.summary[locale]}
-                </Text>
+                <Prose role="meta" value={project.summary[locale]} className={styles.summary} />
               </figcaption>
             </figure>
           </li>

@@ -190,6 +190,40 @@ the studio no way to write a lower-case title, or a name that is only capitalise
 place. Case is content. The tracking and the size are what make a label read as one; those
 stay, and anything meant to be shouted is typed that way.
 
+### Formatting a run of prose
+
+`--type-scale` above is the site-wide half of the "font size, like Word" answer, and it is
+still the right one for the *site*. The studio asked the same question a second time about
+the *paragraph* — a bold word here, an italic one there, this line bigger, that one
+centred — and `Prose.tsx` is that half. Four controls, on every box in CAFA-Admin the
+studio types prose into:
+
+| Control | Where it lives | What it renders |
+|---|---|---|
+| Bold | a run inside a line | `<strong>` at `--type-weight-strong` |
+| Italic | a run inside a line | `<em>`, synthesised — no face ships an italic cut |
+| Size | a whole line | the **next type role up**, or two up |
+| Alignment | a whole line | `text-align: start / center / end` |
+
+The size control is the one that had to be designed rather than wired. Word's answer is a
+number of points, and a number of points is the thing this design cannot offer: six roles
+are what make the pages look like one site, and a field that can put 9 px on a paragraph
+breaks §10's contrast floor and §9's touch floor in one edit, live, with nothing between
+the studio and the deploy. So a step is a step **to another of the six** — `body` → `title`
+→ `display`, `meta` → `index` → `body` — off a ladder in `Prose.tsx`. A page with formatting
+on it still sets type in six sizes. As with `--type-scale`, there is no step down.
+
+Alignment carries one distinction worth knowing about: a line the studio has not aligned
+renders **no `text-align` at all** and inherits the page's. That is what keeps the front
+page's centred statement centred through an edit that never touched it. `left` is a
+choice, is stored, and does override — which is the point of pressing it.
+
+The formatting travels *inside* the string, in the small grammar `lib/rich-text.ts`
+defines and documents (`**bold**`, `*italic*`, a `{center large}` at the head of a line).
+No field was added to the bundle, no column to the admin's tables, and every value written
+before any of this existed parses to exactly itself with nothing marked on it. Parsing
+happens at build time with every other content read, so none of it reaches a browser.
+
 ---
 
 ## 4. Space

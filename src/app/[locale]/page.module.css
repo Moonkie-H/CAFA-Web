@@ -41,12 +41,19 @@
  * breaks where it wants now, and prose at 11px with the letters pushed apart is
  * a caption of a statement rather than a statement.
  *
- * `pre-line` is what carries those breaks. The statement is a single string in
- * the bundle — one field, typed into one box in CAFA-Admin — so where it breaks
- * is where the studio pressed return, and collapsing that here would be the
- * rendering disagreeing with the record. Runs of spaces still collapse and the
- * line still wraps on its own when it is too long for --measure; only the
- * newlines survive, which is exactly the amount of control being handed over.
+ * The breaks used to be carried by `white-space: pre-line` on the single string
+ * this is. They are carried by Prose now, which draws each line the studio typed
+ * as its own block box — because a line is also what holds an alignment and a
+ * size, and no `white-space` value can align half of a paragraph. `pre-line` is
+ * gone rather than kept as a belt: there are no newlines left in the markup for
+ * it to act on, and a rule that does nothing is a rule somebody has to read.
+ *
+ * `text-align: center` is the design's, and it survives an unformatted
+ * statement: a line the studio has not aligned inherits it. One the studio
+ * *has* aligned overrides it, which is the whole point of the control.
+ *
+ * `text-wrap: balance` is inherited, so it now balances each line rather than
+ * the block — which is what a deliberately broken statement wants.
  *
  * Descendant selector for the leading, not for specificity theatre: Text's own
  * `.body` sets a line-height, and a single class in this file would depend on
@@ -57,7 +64,6 @@
   max-inline-size: var(--measure);
   text-align: center;
   text-wrap: balance;
-  white-space: pre-line;
 }
 
 .above .statement {

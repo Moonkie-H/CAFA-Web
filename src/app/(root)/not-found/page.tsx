@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { PageHeading } from '@/components/composites/PageHeading';
 import { Grid } from '@/components/primitives/Grid';
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import { getDictionary, getSite } from '@/lib/content';
 import { routes } from '@/lib/routes';
@@ -28,9 +29,7 @@ export default function NotFoundPage() {
   return (
     <Grid className={styles.page}>
       <PageHeading title={notFound.title} />
-      <Text role="body" className={styles.body}>
-        {notFound.body}
-      </Text>
+      <Prose role="body" value={notFound.body} className={styles.body} />
       <Link href={routes.home(locale)} className={styles.link}>
         <Text role="label" as="span">
           {notFound.home}
