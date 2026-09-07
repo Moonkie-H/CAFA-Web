@@ -194,32 +194,52 @@ stay, and anything meant to be shouted is typed that way.
 
 `--type-scale` above is the site-wide half of the "font size, like Word" answer, and it is
 still the right one for the *site*. The studio asked the same question a second time about
-the *paragraph* — a bold word here, an italic one there, this line bigger, that one
-centred — and `Prose.tsx` is that half. Four controls, on every box in CAFA-Admin the
-studio types prose into:
+the *paragraph* — a bold word here, an italic one there, this one bigger — and `Prose.tsx`
+is that half. Three controls, on every box in CAFA-Admin the studio types prose into:
 
 | Control | Where it lives | What it renders |
 |---|---|---|
 | Bold | a run inside a line | `<strong>` at `--type-weight-strong` |
 | Italic | a run inside a line | `<em>`, synthesised — no face ships an italic cut |
-| Size | a whole line | the **next type role up**, or two up |
-| Alignment | a whole line | `text-align: start / center / end` |
+| Size | the whole field | an inline `font-size`, in pixels |
 
-The size control is the one that had to be designed rather than wired. Word's answer is a
-number of points, and a number of points is the thing this design cannot offer: six roles
-are what make the pages look like one site, and a field that can put 9 px on a paragraph
-breaks §10's contrast floor and §9's touch floor in one edit, live, with nothing between
-the studio and the deploy. So a step is a step **to another of the six** — `body` → `title`
-→ `display`, `meta` → `index` → `body` — off a ladder in `Prose.tsx`. A page with formatting
-on it still sets type in six sizes. As with `--type-scale`, there is no step down.
+The size control is the one that had to be designed rather than wired, and it has been
+designed twice. Its first answer was a step to the **next of the six roles** — `body` →
+`title` → `display` — on the reasoning that a number of points is what this design cannot
+offer, since six roles are what make the pages look like one site. The reasoning was sound
+and the control was still wrong: the studio was not choosing between roles it could see, it
+was thinking "28 pixels", and "large" made it guess which role that word landed on for a
+page it was not looking at. So the size is now the number, set on the field as an inline
+`font-size` off the bundle — no more a hardcoded value under CLAUDE.md §4 than an image's
+intrinsic width is, and for the same reason: the studio measured it, not us.
 
-Alignment carries one distinction worth knowing about: a line the studio has not aligned
-renders **no `text-align` at all** and inherits the page's. That is what keeps the front
-page's centred statement centred through an edit that never touched it. `left` is a
-choice, is stored, and does override — which is the point of pressing it.
+What keeps that from being the hole the first design feared is the **range**, and it lives
+in the grammar rather than in the component. `lib/rich-text.ts` reads a number between
+**14 and 120** as a size and anything outside it as ordinary text, so 9 px body copy is not
+something `Prose` refuses — it is something no value can express, and §10's contrast floor
+and §9's 14 px floor hold by construction. The leading follows the size because every role
+sets `line-height` unitless. Where the studio has typed nothing the size is `null`, no
+`font-size` is emitted at all, and the line is drawn in the role its page chose — which is
+what every word on the site says today, and what keeps the front page's statement the size
+the front page decided.
+
+The size belongs to the **field**, not to a line, and that is the other thing that changed.
+The same summary in Chinese and in English is one piece of copy at one size; storing it per
+line let the two languages disagree about how big the same sentence was, and made the form
+ask twice. One number, one control, both locales.
+
+**Alignment is gone.** It was a whole-line `text-align`, and it is not coming back: a
+centred line is a decision about a page's composition, which is the page's to make in its
+own stylesheet — the front page centres its statement there — and a control that let an
+editor override it from a text box could only ever produce a rhythm nobody drew. Prose
+written while the control existed carries `{center}` and `{right larger}` at the head of a
+line; the parser recognises those words and **drops them**, so that copy renders as the
+sentence it always was rather than growing a literal "{center}" in front of it. No pixel
+size is invented from `large` on the way past — it meant "one role up from whatever this
+page draws this field in", which is not a number anything can honestly guess.
 
 The formatting travels *inside* the string, in the small grammar `lib/rich-text.ts`
-defines and documents (`**bold**`, `*italic*`, a `{center large}` at the head of a line).
+defines and documents (`**bold**`, `*italic*`, a `{28}` at the head of the value).
 No field was added to the bundle, no column to the admin's tables, and every value written
 before any of this existed parses to exactly itself with nothing marked on it. Parsing
 happens at build time with every other content read, so none of it reaches a browser.

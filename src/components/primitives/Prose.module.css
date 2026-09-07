@@ -1,11 +1,11 @@
 /*
- * What the studio's four controls come to on the page.
+ * What the studio's three controls come to on the page.
  *
- * Two of the four are here and two are not, which is the point: a line's
- * alignment is a `text-align` and cannot be anything else, while a line's *size*
- * is a step to another of the six type roles, so Prose hands that line to Text
- * and this file never names a size. There is no font-size in this stylesheet
- * and there should never be one.
+ * One of the three is here and two are not, which is the point. The size is a
+ * number out of the bundle, so it is an inline `font-size` on the element Prose
+ * draws — there is no font-size in this stylesheet and there should never be
+ * one, because a rule here could only ever name a size nobody chose. What is
+ * left is the two marks, and the box a line needs to be a line.
  */
 
 .line {
@@ -13,21 +13,21 @@
 }
 
 /*
- * Logical, not physical. Both locales run left to right today, so `start` and
- * `left` are the same pixel — but the studio's word for it is "left" and the
- * page's rule for it is "wherever this text begins", and it costs nothing to
- * write the second one.
+ * A word too long for its column breaks rather than pushing the page sideways.
+ *
+ * `break-word` and not `anywhere`: it breaks only a word that would otherwise
+ * overflow, and unlike `anywhere` it does not enter into the box's min-content
+ * width, so no column anywhere on the site gets narrower because of it. Nothing
+ * about ordinary prose changes.
+ *
+ * It is here because of the size control. Prose used to be drawn at one of six
+ * roles, all of them small enough that a long word fitted its column by
+ * arithmetic; the studio can now set a field at 120 px, and a 120 px word in the
+ * project grid's cell is wider than a phone. §9's failure mode is a page that
+ * scrolls horizontally, and this is one line against it.
  */
-.left {
-  text-align: start;
-}
-
-.center {
-  text-align: center;
-}
-
-.right {
-  text-align: end;
+.prose {
+  overflow-wrap: break-word;
 }
 
 /*
