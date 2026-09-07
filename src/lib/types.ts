@@ -10,6 +10,58 @@ export type Locale = (typeof LOCALES)[number];
 export type LocalisedText = Record<Locale, string>;
 
 /**
+ * How a photograph meets the space a page gives it.
+ *
+ * Every photograph on this site is drawn at its own proportions — the column is
+ * the constant, the picture keeps the shape it was taken at — and that is still
+ * what happens unless the studio has said otherwise. DESIGN-SYSTEM.md §8 rule 5
+ * is the reason, and it has not changed: a portfolio is not a grid of uniform
+ * thumbnails, and a site that crops everything to one ratio by default is the
+ * template look the whole design is avoiding.
+ *
+ * What the rule could not do is let the studio put a 3:2 photograph and a 4:5
+ * one in the same grid without the grid going ragged, on the pages where a row
+ * has to agree with itself. So the crop is now a decision per photograph,
+ * taken in the admin, against a preview of the page — never a global default,
+ * and never something the site decides on the studio's behalf.
+ *
+ * All five values are spent as CSS: `aspect-ratio` on the frame,
+ * `object-fit`, `object-position` and `scale` on the picture inside it. Nothing
+ * is cropped in the bucket, which is not a shortcut but the only way this can
+ * work at all — the zone cannot transform images, so there is no
+ * `/cdn-cgi/image/` to crop with and no encoder anywhere in this repository.
+ * It also means the CLS budget is untouched: a frame with a ratio is a box the
+ * browser can size before a single byte of the photograph arrives.
+ */
+export interface ImageFraming {
+  /**
+   * The frame's shape as width ÷ height, or null for the photograph's own.
+   *
+   * A number rather than a name, because the name would have to mean the same
+   * ratio here and in the admin's preview — and the day the two disagreed, the
+   * studio would be composing against a picture of a page this one does not
+   * draw.
+   */
+  ratio: number | null;
+  /**
+   * Whether the photograph fills the frame, cropping what falls outside, or
+   * fits inside it and lets the frame show through around it.
+   *
+   * Inert while `ratio` is null, and not by a special case: the frame is then
+   * the photograph's own shape and the two words describe the same picture.
+   */
+  fit: 'cover' | 'contain';
+  /** Magnification inside the frame, 1 being none. Never below 1. */
+  zoom: number;
+  /**
+   * The point of the photograph the frame is held over, in per cent from the
+   * left and from the top. 50/50 is the middle.
+   */
+  x: number;
+  y: number;
+}
+
+/**
  * A reference to a photograph in the bucket. Intrinsic dimensions are not
  * repeated here: the admin measures them when the file is uploaded and the
  * content bundle carries them, so a content record can never disagree with the
@@ -24,6 +76,8 @@ export interface ImageRef {
    * withholds — see parseWorks.
    */
   alt: LocalisedText | '';
+  /** How it is drawn here. See ImageFraming. */
+  frame: ImageFraming;
 }
 
 export type WorkStatus = 'completed' | 'in-progress' | 'private';

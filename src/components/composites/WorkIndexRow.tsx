@@ -125,6 +125,7 @@ function RowContents({
         <Focus depth={scenes.worksRowCover.depth} className={styles.cover}>
           <MediaFrame
             entry={cover}
+            frame={work.cover.frame}
             alt={work.cover.alt === '' ? '' : work.cover.alt[locale]}
             sizes="(min-width: 768px) 46vw, 92vw"
             priority={priority}

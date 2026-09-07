@@ -26,6 +26,7 @@ import {
   type AboutPage,
   type Dictionary,
   type HomePage,
+  type ImageFraming,
   type ImageRef,
   type Locale,
   type LocalisedText,
@@ -185,6 +186,61 @@ function localised(value: unknown, at: string): LocalisedText {
 }
 
 /**
+ * The bounds a frame is held to, which are the admin's own — a shape no page
+ * can lay out and a zoom past the pixels the file has are the two ways this can
+ * be set wrongly, and both are refused at the gate rather than drawn.
+ */
+const FRAME_RATIO_MIN = 0.2;
+const FRAME_RATIO_MAX = 5;
+const FRAME_ZOOM_MIN = 1;
+const FRAME_ZOOM_MAX = 3;
+
+/** The photograph as it was uploaded: its own shape, whole, centred. */
+const NATURAL_FRAME: ImageFraming = { ratio: null, fit: 'cover', zoom: 1, x: 50, y: 50 };
+
+/** A number the layout depends on, refused rather than clamped. */
+function within(value: unknown, at: string, low: number, high: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < low || value > high) {
+    fail(at, `a number between ${low} and ${high}`);
+  }
+  return value;
+}
+
+/**
+ * How a photograph is framed, or the way every photograph was framed before
+ * there was a choice.
+ *
+ * Absent and null are one answer, for the same reason they are one answer for
+ * `tint` and `version`: a revision published before the admin had the control
+ * carries no such field, and the honest reading of that is "this photograph
+ * keeps its own shape" — which is what the site did for every photograph and
+ * still does for most. So an older bundle builds, unchanged, into the same
+ * pages.
+ *
+ * A frame that is *present* is checked to the last field, because all five
+ * reach the browser as CSS. A ratio of zero is a box with no height and a zoom
+ * of forty is a photograph enlarged past its own pixels; neither errors, both
+ * are only ever found by looking at the page.
+ */
+function framing(value: unknown, at: string): ImageFraming {
+  if (value === undefined || value === null) return NATURAL_FRAME;
+  const record = object(value, at);
+  const fit = text(record.fit, `${at}.fit`);
+  if (fit !== 'cover' && fit !== 'contain') fail(`${at}.fit`, 'cover | contain');
+
+  return {
+    ratio:
+      record.ratio === null || record.ratio === undefined
+        ? null
+        : within(record.ratio, `${at}.ratio`, FRAME_RATIO_MIN, FRAME_RATIO_MAX),
+    fit,
+    zoom: within(record.zoom, `${at}.zoom`, FRAME_ZOOM_MIN, FRAME_ZOOM_MAX),
+    x: within(record.x, `${at}.x`, 0, 100),
+    y: within(record.y, `${at}.y`, 0, 100),
+  };
+}
+
+/**
  * CLAUDE.md §10: alt is required. The only way to have no alt text is to say
  * so, with an empty string, which is how a decorative image is declared.
  */
@@ -193,6 +249,7 @@ function image(value: unknown, at: string): ImageRef {
   return {
     src: filled(record.src, `${at}.src`),
     alt: record.alt === '' ? '' : localised(record.alt, `${at}.alt`),
+    frame: framing(record.frame, `${at}.frame`),
   };
 }
 
@@ -238,7 +295,9 @@ function work(value: unknown, at: string): Work {
         name: localised(entry.name, `${credit}.name`),
       };
     }),
-    cover: withheld ? { src: '', alt: '' } : image(record.cover, `${at}.cover`),
+    cover: withheld
+      ? { src: '', alt: '', frame: NATURAL_FRAME }
+      : image(record.cover, `${at}.cover`),
     media: withheld ? [] : each(record.media, `${at}.media`, image),
   };
 }

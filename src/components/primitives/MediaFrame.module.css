@@ -8,18 +8,53 @@
  * the hidden cover came back, and it and the backdrop claimed the same
  * view-transition-name: two elements, one identity, and the browser abandons the
  * whole transition. A primitive must not be able to win that race.
+ *
+ * The frame is the box the photograph is drawn into, and its shape is
+ * --frame-ratio: the studio's, where one was chosen, and otherwise the
+ * photograph's own. Either way it is a number the browser has before the file
+ * arrives, which is what holds the page still — DESIGN-SYSTEM.md §8 rule 5's
+ * "each keeps its own" is the default rather than the only possibility now, and
+ * the CLS budget is indifferent to which of the two it is.
+ *
+ * `overflow: clip` is what makes a zoom a crop. Clip rather than hidden: hidden
+ * would make every photograph on the site a scroll container, which is a box a
+ * keyboard can land in and a screen reader announces.
  */
 .frame {
+  aspect-ratio: var(--frame-ratio);
   background-color: var(--c-paper-raised);
+  /*
+   * The width is the constant and the ratio decides the height — DESIGN-SYSTEM.md
+   * §8 rule 5, stated as CSS. It has to be `100%` rather than left at `auto`,
+   * and the difference only shows where a page caps the height: with an `auto`
+   * width, a `max-block-size` that clips the ratio makes the browser re-resolve
+   * the *width* from it too, and the front page's full-bleed plates came out
+   * three hundred pixels wide instead of cropped. A definite width means the cap
+   * can only ever take height away.
+   */
+  inline-size: 100%;
+  overflow: clip;
 }
 
 /*
- * The intrinsic width/height attributes on the <img> supply the aspect ratio,
- * so height: auto holds the box open before the bytes arrive. No fixed crop:
- * DESIGN-SYSTEM.md §8 rule 5 — the column width is what stays constant, not the
- * ratio.
+ * The photograph fills its frame and `object-fit` decides what that means: with
+ * an unframed photograph the box is already its own shape, so cover, contain
+ * and fill draw the identical picture and only a framed one can tell them
+ * apart. That is why no page module sets `object-fit` any more — the frame owns
+ * it, and a page that set it too would be overruling the studio from a
+ * stylesheet.
+ *
+ * `scale` about `transform-origin` rather than a wider `object-fit` box: it
+ * magnifies around the same point `object-position` is already holding the
+ * frame over, so zooming in does not also drift sideways. Both are compositable
+ * — CLAUDE.md §7 — though nothing here animates: they are set once, per
+ * photograph, from the content.
  */
 .frame img {
-  block-size: auto;
+  block-size: 100%;
   inline-size: 100%;
+  object-fit: var(--frame-fit);
+  object-position: var(--frame-focus);
+  scale: var(--frame-zoom);
+  transform-origin: var(--frame-focus);
 }

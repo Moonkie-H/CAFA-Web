@@ -84,15 +84,17 @@
  * Selected through the <picture> rather than as `.plate img`, which would tie
  * with MediaFrame's own rule at 0-1-1 and be settled by whichever module the
  * bundler emitted last — the exact race that file's header warns about.
+ *
+ * The strip is the one place a photograph's chosen shape does not survive, and
+ * that is deliberate: the plates stand at a common horizon (see .plate) and the
+ * portrait is the flexible part inside one, so the flex height overrules
+ * --frame-ratio. Everything else the studio set still applies — which part of
+ * the portrait the frame keeps, and how far in — and those are the two that
+ * matter in a box this shape.
  */
 .plate picture {
   flex: 1 1 auto;
   min-block-size: 0;
-}
-
-.plate picture img {
-  block-size: 100%;
-  object-fit: cover;
 }
 
 /*

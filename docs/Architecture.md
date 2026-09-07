@@ -13,7 +13,7 @@ Companion to `CLAUDE.md`. That file is the law; this is the map.
 | Animation | Browser-native: view transitions + scroll-driven animations | The budget for `motion` was ~5 KB and it has not been spent. React's `<ViewTransition>` hands route changes to the browser's View Transitions API, and `animation-timeline: view()` binds scroll motion to the compositor. Both are CSS from that point on, so the most animated surface on the site ships no animation runtime at all. §5.4–5.5. |
 | Content | Fetched from CAFA-Admin (D1) at build time | `scripts/fetch-content.mjs` calls `src/services/content-api.mts` and writes `content/bundle.generated.json` before `next build`; `lib/content-schema.ts` re-parses every field, so a malformed record fails the build instead of rendering. No runtime fetch, no CMS client, no server. The studio edits in the admin and presses Publish; a deploy hook rebuilds this. |
 | i18n | Route segment + dictionary | Two locales don't justify a library. `[locale]` segment, a `dictionaries/` map, `generateStaticParams` emits both trees. |
-| Images | R2 originals, transformed on delivery when the zone can | `next/image` optimisation is unavailable under `output: 'export'`, and a build-time `sharp` pass cannot survive CI — its incremental cache dies with the container, so every build would re-encode ~700 AVIF derivatives. Cloudflare transforms the original per request and caches it; `format=auto` negotiates AVIF or WebP. Nothing is derived at build time and no media ships in `out/`. |
+| Images | R2 originals, transformed on delivery when the zone can; framed by CSS | `next/image` optimisation is unavailable under `output: 'export'`, and a build-time `sharp` pass cannot survive CI — its incremental cache dies with the container, so every build would re-encode ~700 AVIF derivatives. Cloudflare transforms the original per request and caches it; `format=auto` negotiates AVIF or WebP. Nothing is derived at build time and no media ships in `out/`. A crop is likewise never a file: the studio's per-photograph frame is four CSS values over the untouched original — see §6. |
 | Deploy | Cloudflare Workers, static assets | `out/` is the whole artefact — HTML, CSS and JS, no media. Builds are triggered by a deploy hook the admin pokes on publish. |
 
 **The `next/image` caveat, handled.** `next.config.ts` sets `images: { unoptimized: true }`.
@@ -607,17 +607,66 @@ The compliant-and-cheaper state is still a zone that transforms — turn Images 
 Transformations on, drop `MEDIA_TRANSFORM` from the admin's `wrangler.jsonc`, redeploy and
 publish once, and the `/cdn-cgi/image/` ladder comes back with no change here.
 
+**The frame.** Every `ImageRef` in the bundle carries one, and it is how the studio decides
+what a photograph looks like where it appears rather than what it looks like in the bucket:
+
+```json
+{ "src": "projects/quiet-room.jpg",
+  "alt": { "zh": "…", "en": "…" },
+  "frame": { "ratio": 1, "fit": "cover", "zoom": 1.1, "x": 60, "y": 40 } }
+```
+
+`ratio` is the shape as width ÷ height, or `null` for the photograph's own — the default,
+and what almost every photograph on the site still has. `fit` is `cover` (crop to the shape)
+or `contain` (letterbox inside it). `zoom` magnifies from there, never below 1. `x`/`y` are
+the point of the picture the frame is held over, in per cent.
+
+All five become CSS on the two elements above — `aspect-ratio` on the `<picture>`,
+`object-fit`, `object-position` and `scale` on the `<img>` — and nothing else in the
+repository knows a frame exists. Three things fall out of that, and each is the reason it
+was built this way rather than as a crop at upload:
+
+- **No transform is available to do it otherwise.** `mediaTransform` is false, there is no
+  sharp in either repository, and a Worker has no decoder. A crop that had to be baked into
+  a file could not be built at all, let alone changed afterwards.
+- **CLS is untouched.** A frame's ratio is a number the browser has before a byte of the
+  photograph arrives, exactly as the intrinsic dimensions were.
+- **The `srcset` still tells the truth, and `sizes` is restated to match.** A cropped
+  photograph is drawn *wider* than its frame — a 3:1 panorama in a square frame is drawn at
+  three times the frame's width — and a `sizes` naming the frame would hand a phone a third
+  of the pixels it is about to display. `MediaFrame` multiplies each length in the caller's
+  `sizes` by how wide the picture is actually drawn, so `(min-width: 1024px) 58vw, 92vw`
+  under a 1.8× crop becomes `(min-width: 1024px) calc(58vw * 1.80), calc(92vw * 1.80)`.
+  Under `contain` the factor is below 1 and the page downloads *less*.
+
+Because the frame owns `object-fit`, no module that styles a `MediaFrame` sets it any more:
+a stylesheet that did would be overruling the studio. A page may still cap a frame's
+*height* — the front page's plates do, so two are never on screen at once — and that
+composes: the cap takes height away and the frame decides what fills what is left. The
+strip of mentor portraits is the one place a *ratio* does not survive, and deliberately:
+the plates stand at a common horizon, so the flex height wins and only the fit, the focus
+and the zoom apply.
+
+The works index's hover backdrop is outside all of this. It is not a `MediaFrame` — it
+builds its own `<img>` in `HoverMediaLayer`, full bleed at 100vw under a paper veil, and it
+is the page's composition rather than the photograph's. A cover framed as a square still
+fills the viewport there, uncropped.
+
+A revision published before frames existed carries no `frame` key, which `lib/content-schema`
+reads as the photograph's own shape. Older bundles build unchanged.
+
 `MediaFrame.tsx` emits:
 
 ```html
-<picture>
+<picture style="--frame-ratio:1.5;--frame-fit:cover;--frame-focus:50% 50%;--frame-zoom:1">
   <img src="…width=1800…" srcset="…width=480… 480w, …width=1200… 1200w" sizes={sizes}
        width={w} height={h} alt={alt} loading="lazy" decoding="async">
 </picture>
 ```
 
-No wrapper div: the intrinsic `width`/`height` attributes give the browser the ratio and
-`height: auto` holds the box open, which is one element fewer for the same zero CLS. Those
+No wrapper div: `--frame-ratio` is the box's shape and holds it open, which is one element
+fewer for the same zero CLS. The intrinsic `width`/`height` attributes stay — they are what
+a browser with no CSS yet uses, and they are where the default ratio comes from. Those
 dimensions come from the bundle, not from the file, which is why the admin measures them
 from the uploaded bytes rather than trusting a form field. The one measurement that does
 come from the client is `tint`: finding a hue means decoding pixels, which a Worker cannot
