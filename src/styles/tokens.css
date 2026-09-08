@@ -642,11 +642,44 @@
   --type-lang-tracking-scale: 0;
 }
 
-/* §3 — index and meta step once below --bp-sm so they clear the touch floor. */
+/*
+ * §3 — the scale compresses on a phone.
+ *
+ * `index`, `meta` and `label` step *up* so they clear the touch floor, and
+ * `body` steps *down* to meet them. All four are the same observation from
+ * different sides:
+ * the distances between the roles were chosen on a desktop page, where the
+ * widest thing on screen is a line of prose, and on a 390px screen those same
+ * distances read as a much larger jump than they measure — a 15px line of
+ * Chinese beside an 11px navigation is 1.38x on paper and considerably more than
+ * that to the eye, because a CJK glyph fills its em box and an 11px Latin label
+ * spends half of its on the x-height.
+ *
+ * That jump is what the front page is: a statement centred on an empty screen
+ * with nothing above it but the bar. The studio asked for it to come down, and
+ * 14px is exactly as far as it goes — §9 puts body text at 14px and never below,
+ * and the three roles that do go under it are a carve-out this is not allowed to
+ * join. So `body` stops at the floor, and the rest of the distance is closed
+ * from the bar's side: `label` steps to 12px, which is the step `meta` has
+ * always taken here and the one the nav was left out of.
+ *
+ * Left out rather than exempt, as far as anything written down says. The reason
+ * given for the other two is the touch floor, and a nav item is the most
+ * pressed thing on the site — 11px was the one label on a phone that had neither
+ * the step nor a reason not to have it. It keeps its tracking, which is what
+ * makes a label read as a label; only the size moves, and only here.
+ *
+ * Flat values rather than a changed clamp, for the same reason index and meta
+ * are flat: the fluid curve belongs to the widths that have room to be fluid in.
+ * `--type-field-size` is unaffected — it is `max(1rem, …)`, so the 16px that
+ * stops iOS zooming a focused field still wins.
+ */
 @media (width < 480px) {
   :root {
+    --type-body-size: calc(0.875rem * var(--type-scale)); /* 14px — §9's floor */
     --type-index-size: calc(0.875rem * var(--type-scale)); /* 14px */
     --type-meta-size: calc(0.75rem * var(--type-scale)); /* 12px */
+    --type-label-size: calc(0.75rem * var(--type-scale)); /* 12px */
   }
 }
 

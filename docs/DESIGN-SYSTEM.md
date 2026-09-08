@@ -170,9 +170,22 @@ role's leading, since a two-word heading at paragraph leading floats away from t
 particulars ranged under it; the number takes `index`, which is the role that exists for
 exactly this figure and is what the works index already sets it at.
 
-`index` and `meta` stay fixed rather than fluid: at these sizes fluid scaling either breaks
-the 44 px touch floor on mobile or bloats absurdly at 2560 px. They step once at the `sm`
-breakpoint instead (`index` → 14 px, `meta` → 12 px on touch).
+`index`, `meta` and `label` stay fixed rather than fluid: at these sizes fluid scaling either
+breaks the 44 px touch floor on mobile or bloats absurdly at 2560 px. They step once at the
+`sm` breakpoint instead (`index` → 14 px, `meta` and `label` → 12 px on touch). `label` was
+left out of that step for no reason anyone wrote down, and it is the role a reader presses
+most — the nav bar is set in it.
+
+**And `body` steps the other way at the same breakpoint, to 14 px.** It is the same
+observation from the other side: the distances between the roles were set on a desktop page,
+and on a 390 px screen they read as a bigger jump than they measure. The front page is where
+that shows, because it is a statement centred on an empty screen with nothing above it but
+the bar — 15 px of Chinese against an 11 px navigation is 1.38× on paper and much more than
+that to the eye, since a CJK glyph fills its em box where an 11 px Latin label spends half of
+its on the x-height. The studio said so, and 14 px is exactly as far as this can go: it is
+§9's floor, and the three roles that sit under it are a carve-out `body` may not join. So the
+rest of the gap is closed from the other side, by `label`'s step above: 14 px against 12 px,
+where it was 15 px against 11 px.
 
 These three sizes sit below the 14 px floor in §9 of the constitution. That was a genuine
 contradiction between the two documents, and it is resolved in §9's favour of the design:
@@ -462,7 +475,20 @@ Keep these visible during review:
 3. No box has a background different from the page unless it contains media.
 4. Metadata is small, grey, and left exactly where it was on the previous page. Consistency
    of position across pages is what makes a site feel authored rather than assembled.
-5. Images are never cropped to a fixed aspect ratio globally — each keeps its own, and the
+5. Images are never cropped to a fixed aspect ratio *globally* — each keeps its own, and the
    column width is what's constant. This is why the reference sites feel like a portfolio
    and a grid of uniform thumbnails feels like a template.
+
+   What the rule forbids is a stylesheet deciding it for all of them. A photograph may be
+   given a frame **one at a time, by the studio, in the admin, against a preview of the
+   page** — a shape, whether it fills that shape or fits inside it, how far in, and which
+   part of it the shape keeps. That is a composition decision taken by the person who took
+   the picture, which is the opposite of the failure this rule names; the failure is a
+   template cropping everything to 4:3 because a grid was easier to build that way.
+
+   The default is unchanged and is what almost every photograph on the site still uses. Two
+   consequences follow from that and are worth keeping visible: a *row* that has to agree
+   with itself — the About grid, a strip of portraits — is the case a frame is for, and a
+   work's media column is the case it is not. And a frame is CSS over an untouched original,
+   so nothing about it is permanent and nothing costs an upload.
 6. The homepage should survive deleting half of it. Try it before shipping.

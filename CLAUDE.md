@@ -157,7 +157,9 @@ Rules that keep this true:
 - **Never animate anything but `transform`, `opacity`, `filter` and `clip-path`.** Animating
   `width`, `height`, `top`, `left`, `margin` or `background-color` is a defect.
 - Every image and video element declares intrinsic `width`/`height` (or an
-  `aspect-ratio` box). CLS from media is unacceptable.
+  `aspect-ratio` box). CLS from media is unacceptable. A photograph the studio has framed
+  gets both: the ratio it was given holds the box open, and the measured dimensions stay on
+  the `<img>`.
 - Images: one `srcset` + `sizes` on every one — no exceptions, and a single full-size
   candidate is not a `srcset`. Where the zone can transform, the ladder is Cloudflare's,
   with `format=auto` negotiating AVIF or WebP per request from the `Accept` header; where
@@ -166,7 +168,11 @@ Rules that keep this true:
   is the one place that knows which. `loading="lazy"` and `decoding="async"` except the
   LCP image, which is eager with `fetchPriority="high"`. Every `<img>` carries intrinsic
   `width`/`height` from the bundle — that is what the CLS budget rests on, so it is not
-  optional.
+  optional. Where the studio has framed a photograph — a shape, a fit, a zoom and a focal
+  point, all carried on the `ImageRef` — `sizes` is restated against how wide the picture is
+  actually drawn, because a crop draws it wider than its frame and a `sizes` naming the
+  frame would under-download by exactly the crop factor. `MediaFrame` is the one place that
+  knows this, and no module that styles a frame sets `object-fit` any more.
 - Fonts: self-hosted `woff2`, subset, `font-display: swap`, preloaded, with a metric-matched
   fallback in the `font-family` stack so the swap doesn't shift layout.
 - No scroll or resize handler without `passive: true`; prefer `IntersectionObserver`,
@@ -210,8 +216,11 @@ Rules that keep this true:
     The studio's own `--type-scale` is not an exception to this: it multiplies all six
     together and never goes below 1, so it can move the whole scale up and can neither
     invent a size off it nor take these three under the floor.
-  - `index` and `meta` step up once below `--bp-sm` (to 14 px and 12 px) so a phone still
-    clears the touch floor above.
+  - `index`, `meta` and `label` step up once below `--bp-sm` (to 14 px, 12 px and 12 px) so a
+    phone still clears the touch floor above, and `body` steps down to meet them at 14 px —
+    the scale compresses on a phone, where the distances between the roles read larger than
+    they measure. 14 px is the floor for that step and not a preference: `body` may approach
+    the carve-out and may never enter it, which is why the nav moves too.
   - Small never also means pale. Every one of these roles is held to the 4.5:1 rule in §10
     — which is what caught `--c-ink-45` at 2.9:1 and retired it.
 - Verify at 320, 390, 768, 1024, 1440, 1920 and 2560 px before calling anything done. The

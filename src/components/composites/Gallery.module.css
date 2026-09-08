@@ -12,11 +12,16 @@
 
 /*
  * Each plate is capped well below the viewport height so that two of them are
- * never on screen at once and the scroll keeps its beat. Height rather than
- * aspect-ratio: the source images keep their own proportions, and the crop
- * comes from the Parallax frame around them.
+ * never on screen at once and the scroll keeps its beat. A cap rather than a
+ * shape: the page says how tall a plate may get, and what shape it is stays the
+ * studio's to decide per photograph — a `max-block-size` clamps whatever
+ * --frame-ratio resolved to and leaves the rest alone.
+ *
+ * On the frame rather than on the picture inside it, which is the change the
+ * frame brought: the box is what has a height now, and MediaFrame's own
+ * `object-fit` is what decides how the photograph meets it. Capping the <img>
+ * instead would leave the frame open below a shortened picture.
  */
-.plate img {
+.plate {
   max-block-size: var(--plate-block-max);
-  object-fit: cover;
 }
