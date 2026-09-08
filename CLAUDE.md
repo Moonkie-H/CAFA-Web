@@ -216,11 +216,11 @@ Rules that keep this true:
     The studio's own `--type-scale` is not an exception to this: it multiplies all six
     together and never goes below 1, so it can move the whole scale up and can neither
     invent a size off it nor take these three under the floor.
-  - `index` and `meta` step up once below `--bp-sm` (to 14 px and 12 px) so a phone still
-    clears the touch floor above, and `body` steps down to meet them at 14 px — the scale
-    compresses on a phone, where the distances between the roles read larger than they
-    measure. 14 px is the floor for that step and not a preference: `body` may approach the
-    carve-out and may never enter it.
+  - `index`, `meta` and `label` step up once below `--bp-sm` (to 14 px, 12 px and 12 px) so a
+    phone still clears the touch floor above, and `body` steps down to meet them at 14 px —
+    the scale compresses on a phone, where the distances between the roles read larger than
+    they measure. 14 px is the floor for that step and not a preference: `body` may approach
+    the carve-out and may never enter it, which is why the nav moves too.
   - Small never also means pale. Every one of these roles is held to the 4.5:1 rule in §10
     — which is what caught `--c-ink-45` at 2.9:1 and retired it.
 - Verify at 320, 390, 768, 1024, 1440, 1920 and 2560 px before calling anything done. The
