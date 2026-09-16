@@ -8,15 +8,27 @@
  *                thing the trigger cannot know. That is all this class says.
  *   .window      what sticks, and what `pan` measures itself against. The
  *                trigger makes it a container and clips it; this only centres
- *                its child and says what to do when there is no trigger.
- *   .track       the strip itself, as wide as its contents. The one thing that
- *                actually moves.
+ *                its child.
+ *   .track       the plates, in a row or wrapped over several — which of the two
+ *                is the whole subject of this file, see below.
  *   .plate       one mentor: the portrait, and under it who it is. A fixed total
  *                height with the portrait taking whatever the caption leaves —
  *                see below, because that is what holds the strip's horizon.
  *   .rule        the band of hairlines under the plates. Furniture, not content:
  *                it is [data-still], so the scene's `pan` passes it by and it
  *                reads --pin itself.
+ *
+ * And the rule that orders the rest: **the plates are a strip only where
+ * something can carry them across the window.** The default below is the plates
+ * in flow — wrapped, every one of them on the page, reachable by eye and by Tab
+ * — and the single block at the foot of this file builds the strip on top of it,
+ * under the three conditions the pan actually needs. This used to be the other
+ * way round, with the strip as the default and each reader who could not have it
+ * subtracting their way back out, and that is what put a browser with no scroll
+ * timeline into a horizontal scroll container: not a decision anybody made, but
+ * the shape left over once the pin was taken away. Written this way the absence
+ * of the pan is one arrangement with one reason, and a reader gets the strip
+ * only if the strip can move.
  */
 
 /*
@@ -31,51 +43,60 @@
  * pin itself, and --strip-plate-scroll per person on the strip. The count is
  * the only thing MentorStrip sets inline, because the count is the only part of
  * this the admin can change.
+ *
+ * Read only by triggers.css, and only inside the same @supports and width the
+ * strip below is built under, so it costs a reader who never gets the pin
+ * nothing at all.
  */
 .section {
   --pin-track: calc(100svh + var(--mentor-count) * var(--strip-plate-scroll));
 }
 
+/*
+ * No overflow of its own, in either arrangement, and that is the change this
+ * file turns on. triggers.css clips it where the pin is built — `clip`, so the
+ * window does not become a scroll container between the track and the viewport —
+ * and everywhere else there is nothing to clip, because the plates below wrap
+ * rather than run off the edge.
+ */
 .window {
   align-items: center;
   display: flex;
-  /*
-   * The fallback, and the reason it is here rather than in the trigger: without
-   * animation-timeline the whole @supports block never applies, so nothing pins
-   * and nothing pans — and a row several viewports wide with no clip would push
-   * the *document* sideways. A plain scroll container is the honest degradation:
-   * every mentor is still reachable, by hand, in order. MOTION.md §5.6.
-   */
-  overflow: auto hidden;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  /*
-   * Visible only in that same fallback: once triggers.css's [data-pinned] rule
-   * wins the cascade and sets overflow: clip, this box is no longer a scroll
-   * container and neither property paints anything. Firefox has no functioning
-   * animation-timeline yet, so it is the browser that reads these today — and
-   * without a visible track a strip a few thousand pixels wide just looks like a
-   * row that ends at the viewport edge, not one the reader can drag further.
-   */
-  scrollbar-color: var(--c-ink-62) var(--c-ink-16);
-  scrollbar-width: thin;
 }
 
+/*
+ * In flow: as many plates as the width holds, wrapping onto as many lines as it
+ * takes. This is what a reader gets who has no pan to carry the row — a phone,
+ * anyone who asked for no motion, and any browser without scroll-driven
+ * animations, which today is every release Firefox (MOTION.md §5.6).
+ *
+ * It is not a horizontal scroller, and that is the point of the change. A
+ * scroller is a box a keyboard cannot always reach — Firefox does not make one
+ * focusable — so the old fallback put the last plates of the strip behind a
+ * gesture, offered to exactly the readers least served by having to work for the
+ * content. Wrapped, every mentor is simply on the page, which is what the phone
+ * column and the reduced-motion arrangement already did and what this now is.
+ */
 .track {
   align-items: center;
   column-gap: var(--space-l);
   display: flex;
-  /* max-content, and `pan` depends on it: the keyframe travels 100cqi − 100%,
-     and that 100% has to be the strip's real width. A flex item that shrank to
-     its window would resolve the whole distance to zero. */
-  flex: 0 0 max-content;
+  flex-wrap: wrap;
+  padding-block: var(--space-l);
   padding-inline: var(--space-gutter);
+  row-gap: var(--space-l);
 }
 
+/*
+ * Its own line, because wrapped the plates below it are a grid and a label
+ * sharing their first row would indent that row by the label's width and leave
+ * every column ragged. A flex basis of the whole line is what ends a flex line
+ * after it. On the strip, where the plates are one row and the label is the
+ * chapter mark at the head of it, it goes back to travelling with them.
+ */
 .title {
   color: var(--c-ink-62);
-  flex: 0 0 auto;
-  padding-inline-end: var(--space-l);
+  flex: 0 0 100%;
   /* The label is a mark on the strip, not a line of copy — it never wraps. */
   white-space: nowrap;
 }
@@ -87,6 +108,11 @@
  * and letting the caption hang below it would make every plate a different
  * height and give the row a ragged foot; worse, it would move the strip's own
  * scroll rule, which is positioned off half a plate (see .rule).
+ *
+ * The horizon is kept in both arrangements, because a wrapped row is still rows:
+ * plates of unequal height would give each line of them a ragged foot for the
+ * same reason one line of them would. It is the phone column, further down, that
+ * gives it up — there is no row there to keep level.
  */
 .plate {
   block-size: var(--strip-plate-block);
@@ -95,7 +121,6 @@
   flex-direction: column;
   inline-size: var(--strip-plate-inline);
   row-gap: var(--space-2xs);
-  scroll-snap-align: center;
 }
 
 /*
@@ -173,59 +198,174 @@
 }
 
 /*
- * The strip's scroll rule — see MentorStrip.tsx for what it is and why it is
- * here rather than in the margin.
- *
- * Absolutely positioned, so it takes no part in the window's flex centring and
- * the plates sit where they sat before it existed; the window is sticky, hence
- * positioned, so it is already the containing block and no `position: relative`
- * has to be added anywhere for this to land.
- *
- * Not drawn at all without a scroll timeline. There is no static form of this:
- * with nothing driving it, the band is a row of identical dashes measuring
- * something the reader cannot see it measure, and the window is a plain
- * horizontal scroller in that fallback anyway — which has a scrollbar, which is
- * the indicator. MOTION.md §5.6.
+ * Not drawn unless the strip is. There is no static form of this: with nothing
+ * driving it, the band is a row of identical dashes measuring something the
+ * reader cannot see it measure, and a wrapped row has no length along which to
+ * measure anything. MOTION.md §5.6.
  */
 .rule {
   display: none;
 }
 
+/*
+ * And on a phone it is a column, which is the whole of what a phone changes.
+ *
+ * Wrapping is what a wide screen does with the same plates, and at 390px it
+ * would put one 15rem plate per line with the rest of the width empty beside
+ * it. So the plates take the column instead — and with them go the two rules the
+ * row needed and a column does not: the common horizon that held every portrait
+ * to the same height, and the caption held to four lines to keep it. Read down
+ * the page, each portrait keeps the shape the studio framed it at and each
+ * sentence is simply there, which is what the projects below it already do.
+ */
+@media (width < 768px) {
+  .track {
+    /* start, not centre: centring is what puts a row of plates in the middle of
+       a window, and in a column it would only take the label off the margin
+       every other line on the page is set to. */
+    align-items: start;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    /* The track is as wide as its contents on the strip, and here its contents
+       are as wide as the track: a plate takes the column. Something has to be
+       the definite one, and on a phone it is the window's width. */
+    inline-size: 100%;
+    row-gap: var(--space-2xl);
+  }
+
+  /* A column has no flex line to end, and a basis of 100% down one would be
+     read as a height. The label is simply the first thing in it. */
+  .title {
+    flex: 0 0 auto;
+  }
+
+  .plate {
+    block-size: auto;
+    inline-size: 100%;
+  }
+
+  /* Back to --frame-ratio: nothing is holding a horizon any more, so the
+     portrait is sized by the shape it was given rather than by what the caption
+     left over. MediaFrame owns it again. */
+  .plate picture {
+    flex: 0 0 auto;
+  }
+
+  .caption > * {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  /* Whole. `display: block` is what takes the clamp off — a line limit only
+     means anything to a -webkit-box — and the height goes with it: down the
+     page there is no horizon for a long note to break. */
+  .caption .note {
+    block-size: auto;
+    display: block;
+  }
+}
+
+/*
+ * ── The strip ─────────────────────────────────────────────────────────────────
+ *
+ * Everything above is the plates on the page. This is the one arrangement that
+ * takes them off it and lays them in a single row for the pan to carry, and it
+ * is built under exactly the three conditions the pan needs — the same three
+ * triggers.css builds the pinned scene under, stated here so the shape and the
+ * motion can never disagree about which readers are getting which:
+ *
+ *   a scroll timeline   or there is nothing to drive the travel at all. Firefox
+ *                       ships animation-timeline only behind a flag today, so
+ *                       this is the condition that decides a whole browser.
+ *   no reduced-motion   §9: the plates appear in their final state, and for a
+ *                       pinned scene the *layout* is part of that state.
+ *   --bp-md and up      a window one plate wide is not a strip, it is a slot.
+ *
+ * Miss any one and the reader keeps the wrapped row above, which is a finished
+ * arrangement rather than a degraded strip — the difference between this and
+ * what was here before.
+ */
 @supports (animation-timeline: view()) {
-  .rule {
-    /* They stand up from one baseline, toward the plates. */
-    align-items: end;
-    /* Appears as the section takes the screen, holds for the pan, leaves with
-       it. The shorthand first: it resets animation-timeline, so the timeline has
-       to be stated after it. */
-    animation: strip-rule linear both;
-    animation-range: contain 0% contain 100%;
-    animation-timeline: --pin;
-    /* The lines are spread over the band rather than given a gap, so the rule
-       keeps its proportion at every width it is drawn at. */
-    display: grid;
-    grid-auto-flow: column;
-    inline-size: var(--strip-rule-track);
+  @media (prefers-reduced-motion: no-preference) and (width >= 768px) {
+    /* One row, as wide as its contents, and `pan` depends on that width: the
+       keyframe travels 100cqi − 100%, and that 100% has to be the strip's real
+       width. A flex item that wrapped, or that shrank to its window, would
+       resolve the whole distance to zero. */
+    .track {
+      flex: 0 0 max-content;
+      flex-wrap: nowrap;
+      /* The row is centred in a window a screen tall; the padding that gives the
+         wrapped rows their air would only push it off that centre. */
+      padding-block: 0;
+    }
+
+    .title {
+      flex: 0 0 auto;
+      padding-inline-end: var(--space-l);
+    }
+
     /*
-     * Under the plates by a fixed gap, rather than up from the bottom of the
-     * window by one: the plates are centred (the window is a centred flex box),
-     * so 50% is their middle and half a plate is their lower edge. Measured off
-     * the window's bottom instead, the band held its distance from the edge and
-     * the plates came down to meet it as the viewport got shorter — the two
-     * collided a little under 700px tall. This way the gap is the gap at every
-     * height, which is the thing that was actually meant.
+     * The strip's scroll rule — see MentorStrip.tsx for what it is and why it is
+     * here rather than in the margin.
+     *
+     * Absolutely positioned, so it takes no part in the window's flex centring
+     * and the plates sit where they sat before it existed; the window is sticky,
+     * hence positioned, so it is already the containing block and no
+     * `position: relative` has to be added anywhere for this to land.
      */
-    inset-block-start: calc(50% + var(--strip-plate-block) / 2 + var(--space-l));
-    /* inset-inline: 0 with a definite width and auto margins is what centres the
-       band on the window without a percentage translate — the transform belongs
-       to the lines, and only to the lines. */
-    inset-inline: 0;
-    justify-content: space-between;
-    margin-inline: auto;
-    /* It sits over the window, which is empty there by construction, but nothing
-       about it is reachable and it must never take a press meant for the page. */
-    pointer-events: none;
-    position: absolute;
+    .rule {
+      /* They stand up from one baseline, toward the plates. */
+      align-items: end;
+      /* Appears as the section takes the screen, holds for the pan, leaves with
+         it. The shorthand first: it resets animation-timeline, so the timeline
+         has to be stated after it. */
+      animation: strip-rule linear both;
+      animation-range: contain 0% contain 100%;
+      animation-timeline: --pin;
+      /* The lines are spread over the band rather than given a gap, so the rule
+         keeps its proportion at every width it is drawn at. */
+      display: grid;
+      grid-auto-flow: column;
+      inline-size: var(--strip-rule-track);
+      /*
+       * Under the plates by a fixed gap, rather than up from the bottom of the
+       * window by one: the plates are centred (the window is a centred flex
+       * box), so 50% is their middle and half a plate is their lower edge.
+       * Measured off the window's bottom instead, the band held its distance
+       * from the edge and the plates came down to meet it as the viewport got
+       * shorter — the two collided a little under 700px tall. This way the gap
+       * is the gap at every height, which is the thing that was actually meant.
+       */
+      inset-block-start: calc(50% + var(--strip-plate-block) / 2 + var(--space-l));
+      /* inset-inline: 0 with a definite width and auto margins is what centres
+         the band on the window without a percentage translate — the transform
+         belongs to the lines, and only to the lines. */
+      inset-inline: 0;
+      justify-content: space-between;
+      margin-inline: auto;
+      /* It sits over the window, which is empty there by construction, but
+         nothing about it is reachable and it must never take a press meant for
+         the page. */
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .tick {
+      animation: swell linear both;
+      /* After the shorthand, which resets both of these. The range is inline,
+         per line, and inline wins over the fallback stated here. */
+      animation-range: contain 0% contain 100%;
+      animation-timeline: --pin;
+      background-color: var(--c-ink);
+      block-size: var(--space-s);
+      inline-size: 1px;
+      /* The resting state, stated as well as keyframed: it is what a line holds
+         before its range opens and after it closes. */
+      opacity: var(--tick-ink);
+      transform: scaleY(var(--tick-rest));
+      /* From the baseline upward — a line grows toward the portraits. */
+      transform-origin: 50% 100%;
+    }
   }
 }
 
@@ -270,111 +410,5 @@
 
   to {
     opacity: 0;
-  }
-}
-
-.tick {
-  animation: swell linear both;
-  /* After the shorthand, which resets both of these. The range is inline, per
-     line, and inline wins over the fallback stated here. */
-  animation-range: contain 0% contain 100%;
-  animation-timeline: --pin;
-  background-color: var(--c-ink);
-  block-size: var(--space-s);
-  inline-size: 1px;
-  /* The resting state, stated as well as keyframed: it is what a line holds
-     before its range opens and after it closes. */
-  opacity: var(--tick-ink);
-  transform: scaleY(var(--tick-rest));
-  /* From the baseline upward — a line grows toward the portraits. */
-  transform-origin: 50% 100%;
-}
-
-/*
- * The two readers who get the plates in flow instead of on a strip, and it is
- * one arrangement because it is one situation: there is no pan to carry them.
- *
- * A phone, because triggers.css does not build a pinned scene below --bp-md —
- * a window one plate wide is not a strip, it is a slot — and anyone who has
- * asked for no motion, where the trigger has released the pin and un-clipped
- * the window and what is left is a row several screens wide with nowhere to go.
- * Either way the strip stops being a strip. Not a horizontal scroller: that
- * would be a scroll container a keyboard cannot always reach, offered to
- * exactly the readers least served by having to work for the content. In flow,
- * every plate is simply on the page. MOTION.md §9.
- */
-@media (prefers-reduced-motion: reduce), (width < 768px) {
-  /* And the rule goes with the strip it measured. There is nothing left for it
-     to say once the plates are on the page, and a thing whose entire content is
-     its travel says nothing standing still. MOTION.md §9. */
-  .rule {
-    display: none;
-  }
-
-  .window {
-    overflow: visible;
-  }
-
-  .track {
-    flex: 0 1 auto;
-    flex-wrap: wrap;
-    padding-block: var(--space-l);
-    row-gap: var(--space-l);
-  }
-}
-
-/*
- * And on a phone it is a column, which is the whole of what a phone changes.
- *
- * Wrapping is what a wide screen does with the same plates, and at 390px it
- * would put one 15rem plate per line with the rest of the width empty beside
- * it. So the plates take the column instead — and with them go the two rules the
- * strip needed and a column does not: the common horizon that held every
- * portrait to the same height, and the caption held to four lines to keep it.
- * Read down the page, each portrait keeps the shape the studio framed it at and
- * each sentence is simply there, which is what the projects below it already do.
- */
-@media (width < 768px) {
-  .track {
-    /* start, not centre: centring is what puts a row of plates in the middle of
-       a window, and in a column it would only take the label off the margin
-       every other line on the page is set to. */
-    align-items: start;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    /* The track is as wide as its contents everywhere else, and here its
-       contents are as wide as the track: a plate takes the column. Something
-       has to be the definite one, and on a phone it is the window's width. */
-    inline-size: 100%;
-    row-gap: var(--space-2xl);
-  }
-
-  .title {
-    padding-inline-end: 0;
-  }
-
-  .plate {
-    block-size: auto;
-    inline-size: 100%;
-  }
-
-  /* Back to --frame-ratio: nothing is holding a horizon any more, so the
-     portrait is sized by the shape it was given rather than by what the caption
-     left over. MediaFrame owns it again. */
-  .plate picture {
-    flex: 0 0 auto;
-  }
-
-  .caption > * {
-    overflow: visible;
-    white-space: normal;
-  }
-
-  /* Whole. `display: block` is what takes the clamp off — a line limit only
-     means anything to a -webkit-box — and the height goes with it: down the
-     page there is no horizon for a long note to break. */
-  .caption .note {
-    block-size: auto;
-    display: block;
   }
 }
