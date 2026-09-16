@@ -11,9 +11,10 @@
  * already calls "safe on a ranged trigger" because it ends at its start state.
  * `focus` and `drift` are the opposite — their rest state is the *middle* of the
  * curve — so a browser that cannot scrub them is already showing the picture
- * doing nothing, and needs no fallback; `pin-scrub`'s is the plain scroll
- * container MentorStrip.module.css builds, which is furniture, not a reveal.
- * Neither one is a gap this file leaves — they were never its job.
+ * doing nothing, and needs no fallback; `pin-scrub`'s is structural, not a
+ * reveal — MentorStrip.module.css builds the strip only where the pan can run,
+ * and wraps the plates into flow everywhere else. Neither one is a gap this file
+ * leaves — they were never its job.
  *
  * The tokens are the ones effects.css's keyframes read — --eff-rise, --eff-
  * slide, --eff-split, --eff-depth, --slide-sign, --eff-unmask — and effects.css

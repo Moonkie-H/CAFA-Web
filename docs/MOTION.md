@@ -521,11 +521,13 @@ two files, and both are required: `effects.css` cancels the animations, `trigger
 collapses the tracks, releases the sticky and un-clips the window. What the released content
 then *does* with the room is the component's decision — it is the only thing that knows
 whether its overflow was a strip, a column or a caption. It is also the same arrangement a
-phone gets, where `triggers.css` never built the scene at all, so the component states it
-once for both. The filmstrip wraps into a gallery;
-it deliberately does not become a horizontal scroller, which would be a scroll container a
-keyboard cannot always reach, offered to exactly the readers least served by having to work
-for the content.
+phone gets, where `triggers.css` never built the scene at all, and the same one a browser
+with no scroll timeline gets (§5.6), so the component states it once for all three — which
+is why `MentorStrip.module.css` builds the plates in flow by default and the strip only
+inside the `@supports` and the two media conditions the pan needs. The filmstrip wraps into
+a gallery; it deliberately does not become a horizontal scroller, which would be a scroll
+container a keyboard cannot always reach, offered to exactly the readers least served by
+having to work for the content.
 
 The same trap has a second mouth: `effects.css` cancelled `[data-scene]` and `[data-scene] >
 *`, and both `pin-scrub` and `stack` drive an element *two* levels down. The selector list is
@@ -666,11 +668,18 @@ entrance per surface; Chrome, Edge and Safari get the full figure.
 Two kinds need no fallback at all, for opposite reasons. `scrub`'s effects (`focus`,
 `drift`) rest at the *middle* of their curve, not an edge — a browser that cannot scrub
 them is already showing the right picture doing nothing. `pin-scrub`'s fallback is
-structural, not a reveal: MentorStrip.module.css's plain, natively-scrollable `.window`
-(with a visible `scrollbar-color`/`-width`, or the row is a cut edge with no sign there is
-more) — the honest degradation the pinned filmstrip has no motion-based equivalent for. It
-is the desktop fallback only, because below `--bp-md` there is no strip to degrade: the
-plates are already a column, in flow, on every browser.
+structural, not a reveal: `MentorStrip.module.css` builds the strip *only* inside the
+`@supports`, so a browser with no scroll timeline never gets a row it cannot move — it gets
+the plates wrapped in flow, which is the arrangement §5.5c already gives a phone and a
+reduced-motion reader. One arrangement, one reason: there is no pan to carry them.
+
+That replaced a plain, natively-scrollable `.window`, and the reason is §10 rather than
+taste. A scroll container is not keyboard-focusable in Firefox, and Firefox is the entire
+audience for this fallback — so every plate past the viewport edge was reachable by gesture
+and by nothing else, on the one browser the fallback exists for. §5.5c had already refused
+a horizontal scroller for the reduced-motion reader in the same words; the strip was only
+ever the *default* arrangement rather than a chosen one, and a browser missing the feature
+fell into it because nothing took it back out.
 
 ### 5.7 On GSAP
 

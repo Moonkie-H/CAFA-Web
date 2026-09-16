@@ -39,11 +39,16 @@ interface MentorStripProps {
  * is otherwise a column of prose and a grid of projects, and a row of portraits
  * read across is the one thing on it that is a group rather than a list.
  *
- * Sideways needs room, so on a phone it is not sideways at all — a window one
- * plate wide turns the figure into vertical scrolling that moves the content in
- * a direction the finger did not ask for. triggers.css does not build the pinned
- * scene below --bp-md and MentorStrip.module.css lays the plates down the page
- * there, each portrait at the shape the studio framed it and each note whole.
+ * Sideways needs room, and something to carry it. On a phone it is not sideways
+ * at all — a window one plate wide turns the figure into vertical scrolling that
+ * moves the content in a direction the finger did not ask for — so triggers.css
+ * does not build the pinned scene below --bp-md and MentorStrip.module.css lays
+ * the plates down the page there, each portrait at the shape the studio framed
+ * it and each note whole. The same arrangement, wrapped rather than a column,
+ * is what a reader who asked for no motion gets, and what a browser with no
+ * scroll timeline gets — release Firefox, today. A strip nothing can move is
+ * not a strip, and a row of it behind a horizontal scroll gesture is worse than
+ * one on the page: the module builds the strip only inside the @supports.
  *
  * A face without a name is decoration, so every plate carries one: the portrait,
  * then who it is, then whatever the studio wrote about them. That caption is the

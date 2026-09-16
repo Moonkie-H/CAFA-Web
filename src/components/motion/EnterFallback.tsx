@@ -21,9 +21,11 @@ import { useEffect } from 'react';
  * target: its resting state is already the middle of its curve — full opacity,
  * no scale, no blur — so a browser that cannot scrub it is already showing the
  * right picture doing nothing. `pin-scrub` (the About filmstrip) is the other
- * omission, for the same reason from the other direction: its fallback is the
- * plain scroll container MentorStrip.module.css builds, and a one-shot reveal
- * has nothing to add to a strip that is not going anywhere.
+ * omission, for the same reason from the other direction: its fallback is
+ * structural rather than a reveal — MentorStrip.module.css builds the strip only
+ * where the pan can run, so a browser without one gets the plates wrapped in
+ * flow, and a one-shot reveal has nothing to add to plates that are simply on
+ * the page.
  *
  * Mounted once in the locale layout, next to ScrollField and NavStage, and for
  * the same reason those key off `pathname`: a route change swaps the page
