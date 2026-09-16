@@ -208,10 +208,17 @@
  * triggers.css, so the distance is measured rather than guessed. A viewport unit
  * would have been wrong by the width of the scrollbar, which is the difference
  * between the last plate landing on the edge and being cropped by it.
+ *
+ * min() because that distance is only a distance while the strip is longer than
+ * its window. A studio with two mentors on a wide screen has a strip that
+ * already fits, and 100cqi − 100% is then a *positive* number: the same keyframe
+ * that reveals the far end of a long strip would push a short one out of the
+ * frame to the right. Zero is the honest answer there — a row that fits has
+ * nowhere to travel — and the pin is a screen of stillness rather than a defect.
  */
 @keyframes eff-pan {
   to {
-    transform: translate3d(calc(100cqi - 100%), 0, 0);
+    transform: translate3d(min(0px, 100cqi - 100%), 0, 0);
   }
 }
 

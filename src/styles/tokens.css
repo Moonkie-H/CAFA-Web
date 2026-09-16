@@ -411,7 +411,9 @@
    *
    * --pin-track is the whole track a pin-scrub scene occupies; the pinned span is
    * that minus the one screen the sticky child holds, so 300svh is two screens of
-   * scrub.
+   * scrub. It is the default a pinned scene gets when it has nothing to say about
+   * its own length — the filmstrip has (see --strip-plate-scroll), because what
+   * it is panning is a list somebody edits.
    *
    * --stack-track is one entry's turn at the top, and 120svh is the smallest
    * value that gives the figure all three of its beats. A track of exactly 100svh
@@ -451,14 +453,31 @@
    * scroll, which is roughly half a screen of reading per plate.
    *
    * Both ends of that band are content, not layout: the count comes from the
-   * admin, so a strip of ten would travel nearly twice as far over the same
-   * --pin-track. It is the number to check here if the pan ever feels hurried,
-   * and the fix is the track rather than the plate.
+   * admin, so a strip of ten travels nearly twice as far as a strip of six. That
+   * used to be spent over one fixed --pin-track, which made the pan faster with
+   * every mentor added, so the track is the thing that scales now —
+   * --strip-plate-scroll below, and MentorStrip.module.css's .section.
    *
    * The floor is what a phone needs instead: at 390px, 40vw is a contact sheet.
+   * Below --bp-md it is moot anyway — the plates are a column there, and neither
+   * of these two applies.
    */
   --strip-plate-block: 52svh;
   --strip-plate-inline: max(15rem, 40vw);
+
+  /*
+   * And how much scroll one person on that strip is given, which is what turns
+   * a count into a track length.
+   *
+   * A third of a screen each, which is where the six mentors the studio has
+   * today land on the 300svh the strip was tuned at: one screen for the pin
+   * itself plus six of these is 304svh, so nothing about the figure changes at
+   * the count it was drawn for, and the seventh mentor buys their own scroll
+   * instead of speeding up the other six. It is the number to reach for if the
+   * pan feels hurried or laboured — and unlike the plate width, moving it moves
+   * only the length, not the layout.
+   */
+  --strip-plate-scroll: 34svh;
 
   /*
    * And the strip's own scroll rule: the band of hairlines below the plates that

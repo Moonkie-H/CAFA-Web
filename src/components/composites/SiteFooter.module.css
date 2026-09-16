@@ -4,22 +4,6 @@
   margin-block-start: var(--space-3xl);
 }
 
-/*
- * A work page already closes itself: the pager draws the rule, sets the prev and
- * next work at its two ends and carries this note between them. It is the
- * footer, so this one stands down rather than drawing a second rule --space-3xl
- * below the first and ending the page with two footers stacked and a screen of
- * paper between them. WorkPager.module.css takes on the padding that closed the
- * document, since nothing follows it any more.
- *
- * WorkPager sets data-page-close; <main> and this <footer> are siblings, which
- * is what makes the lookup one selector rather than a prop threaded through the
- * layout for a page that does not own the footer.
- */
-main:has([data-page-close]) + .footer {
-  display: none;
-}
-
 .inner {
   padding-block-start: var(--space-l);
   padding-block-end: max(var(--space-l), env(safe-area-inset-bottom));

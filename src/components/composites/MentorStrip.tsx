@@ -3,15 +3,18 @@ import type { CSSProperties } from 'react';
 import { Media } from '@/components/primitives/Media';
 import { Text } from '@/components/primitives/Text';
 import { scenes, sceneAttrs } from '@/lib/choreography';
+import { cx } from '@/lib/class-names';
 import type { Locale, Mentor } from '@/lib/types';
 
 import styles from './MentorStrip.module.css';
 
 /**
- * --strip-plate-inline is max(15rem, 40vw), and 600px is exactly where those two
- * cross — so this is that token restated in the one syntax that cannot read it.
+ * Below --bp-md a plate is the column, gutter to gutter, which is what 92vw says
+ * everywhere else on the site; above it --strip-plate-inline is max(15rem, 40vw),
+ * and 600px is exactly where those two cross. This is those facts restated in
+ * the one syntax that cannot read a token.
  */
-const SIZES = '(min-width: 600px) 40vw, 15rem';
+const SIZES = '(max-width: 767px) 92vw, (min-width: 600px) 40vw, 15rem';
 
 /** How many hairlines the strip's scroll rule is drawn with. */
 const LINES = 28;
@@ -35,6 +38,12 @@ interface MentorStripProps {
  * is otherwise a column of prose and a grid of projects, and a row of portraits
  * read across is the one thing on it that is a group rather than a list.
  *
+ * Sideways needs room, so on a phone it is not sideways at all — a window one
+ * plate wide turns the figure into vertical scrolling that moves the content in
+ * a direction the finger did not ask for. triggers.css does not build the pinned
+ * scene below --bp-md and MentorStrip.module.css lays the plates down the page
+ * there, each portrait at the shape the studio framed it and each note whole.
+ *
  * A face without a name is decoration, so every plate carries one: the portrait,
  * then who it is, what they work in, and the line the studio wrote about them.
  * That caption is the whole difference between this and a contact sheet, and it
@@ -57,13 +66,19 @@ export function MentorStrip({
   className,
 }: MentorStripProps) {
   return (
-    // The section is the track and the window inside it is what sticks. No class
-    // of its own, because everything a track has — its height, its timeline —
-    // comes from the trigger; the only thing the page has to say about it is the
-    // space above it. The window's *content* is the one thing the trigger drives,
-    // which is why the rule beside it is marked [data-still]: furniture, held
-    // against the window rather than carried across it (triggers.css).
-    <section className={className} {...sceneAttrs(scenes.mentorStrip)}>
+    // The section is the track and the window inside it is what sticks. Its
+    // height and its timeline come from the trigger; what the trigger cannot
+    // know is how long the thing being panned is, so the one number this
+    // component hands the stylesheet is the number of people on the strip —
+    // .section spends it as the track's length. The window's *content* is the
+    // one thing the trigger drives, which is why the rule beside it is marked
+    // [data-still]: furniture, held against the window rather than carried
+    // across it (triggers.css).
+    <section
+      className={cx(styles.section, className)}
+      style={{ '--mentor-count': mentors.length }}
+      {...sceneAttrs(scenes.mentorStrip)}
+    >
       <div className={styles.window} data-pinned="">
         <div className={styles.track}>
           {/* First on the strip rather than fixed above it: the label introduces

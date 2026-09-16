@@ -1,67 +1,23 @@
 /*
- * The block that closes a work page: prev and next at the two ends and the
- * site's footer note between them, one line. SiteFooter stands down when this
- * is on the page, so the padding below is the bottom of the document rather
- * than the bottom of a section — SiteFooter.module.css carries the other half
- * of that arrangement.
+ * The way out of a work: previous at one end, next at the other, under the rule
+ * that closes the work's own columns. The site footer follows it, exactly as it
+ * follows every other page — this block used to carry the footer's note between
+ * its two links and hide the real one, which gave the reader a different ending
+ * on the one page where the ending is also the way onward.
  */
-.close {
+.pager {
   border-block-start: var(--hairline);
   column-gap: var(--grid-gap);
   display: grid;
+  /* Two ends, at every width. The middle track this grid used to keep for the
+     footer note went with the note. :first-child / :last-child rather than a
+     class, because a missing neighbour is an empty div and it still has to hold
+     its end — so the two cells are placed by being the two cells. */
   grid-template-columns: 1fr 1fr;
-  padding-block-end: max(var(--space-l), env(safe-area-inset-bottom));
   padding-block-start: var(--space-l);
-  row-gap: var(--space-l);
   /* Its own part: it rises in last on entering a work and is pinned when paging
      between works, so it reads as a fixture rather than something navigated. §3. */
   view-transition-name: var(--vt-pager);
-}
-
-/* Subgrid, so the two links place on the tracks the note is placed against
-   while staying inside the <nav> that the note is deliberately outside of.
-   :first-child / :last-child rather than a class, because a missing neighbour
-   is an empty div and it still has to hold its end. */
-.steps {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-row: 1;
-  grid-template-columns: subgrid;
-}
-
-.steps > :first-child {
-  grid-column: 1;
-}
-
-.steps > :last-child {
-  grid-column: 2;
-}
-
-/* Below --bp-md the note takes its own line under the links: three things
-   abreast on a phone leaves each work title about forty pixels. */
-.note {
-  color: var(--c-ink-70);
-  grid-column: 1 / -1;
-  text-align: center;
-}
-
-@media (width >= 768px) {
-  .close {
-    grid-template-columns: 1fr auto 1fr;
-    row-gap: 0;
-  }
-
-  .steps > :last-child {
-    grid-column: 3;
-  }
-
-  /* Onto the nav's own row and into the track it leaves empty between the two
-     links. They overlap as grid areas and never as ink. */
-  .note {
-    align-self: center;
-    grid-column: 2;
-    grid-row: 1;
-  }
 }
 
 .step {
