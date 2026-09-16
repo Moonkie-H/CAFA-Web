@@ -87,7 +87,7 @@ the one place in the codebase that touches image markup.
     │       ├── WorkIndexRow.tsx
     │       ├── WorkRail.tsx         # the index compressed to a column of numbers — §5.2
     │       ├── WorkMetaPanel.tsx    # sticky left column on detail
-    │       ├── WorkPager.tsx        # previous / next; the rule the footer joins onto
+    │       ├── WorkPager.tsx        # previous / next, under the rule that closes a work
     │       ├── MediaSequence.tsx    # scrolling right column on detail
     │       ├── ProjectGrid.tsx      # the projects — a picture, a name, a line
     │       ├── Gallery.tsx          # photographs, full bleed, one at a time

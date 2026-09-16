@@ -1,17 +1,21 @@
 import type { CSSProperties } from 'react';
 
 import { Media } from '@/components/primitives/Media';
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import { scenes, sceneAttrs } from '@/lib/choreography';
+import { cx } from '@/lib/class-names';
 import type { Locale, Mentor } from '@/lib/types';
 
 import styles from './MentorStrip.module.css';
 
 /**
- * --strip-plate-inline is max(15rem, 40vw), and 600px is exactly where those two
- * cross — so this is that token restated in the one syntax that cannot read it.
+ * Below --bp-md a plate is the column, gutter to gutter, which is what 92vw says
+ * everywhere else on the site; above it --strip-plate-inline is max(15rem, 40vw),
+ * and 600px is exactly where those two cross. This is those facts restated in
+ * the one syntax that cannot read a token.
  */
-const SIZES = '(min-width: 600px) 40vw, 15rem';
+const SIZES = '(max-width: 767px) 92vw, (min-width: 600px) 40vw, 15rem';
 
 /** How many hairlines the strip's scroll rule is drawn with. */
 const LINES = 28;
@@ -35,10 +39,24 @@ interface MentorStripProps {
  * is otherwise a column of prose and a grid of projects, and a row of portraits
  * read across is the one thing on it that is a group rather than a list.
  *
+ * Sideways needs room, so on a phone it is not sideways at all — a window one
+ * plate wide turns the figure into vertical scrolling that moves the content in
+ * a direction the finger did not ask for. triggers.css does not build the pinned
+ * scene below --bp-md and MentorStrip.module.css lays the plates down the page
+ * there, each portrait at the shape the studio framed it and each note whole.
+ *
  * A face without a name is decoration, so every plate carries one: the portrait,
- * then who it is, what they work in, and the line the studio wrote about them.
- * That caption is the whole difference between this and a contact sheet, and it
- * is why the plate is a <figure>.
+ * then who it is, then whatever the studio wrote about them. That caption is the
+ * whole difference between this and a contact sheet, and it is why the plate is
+ * a <figure>.
+ *
+ * The name is a heading and the rest is prose — one field, not the three the
+ * record used to carry, so how many lines there are and where they break is
+ * written in the admin rather than fixed by this component. What the strip does
+ * hold is the *horizon*: every plate stands at the same height, so the caption
+ * is given a fixed four lines of it and the portrait takes the rest. Past four
+ * the band shows the opening of the note; the phone column, where there is no
+ * horizon to keep, shows all of it.
  *
  * It is not Gallery. That one is a full-bleed vertical column of photographs,
  * one at a time with a lot of paper between them; this is a single row of
@@ -57,13 +75,19 @@ export function MentorStrip({
   className,
 }: MentorStripProps) {
   return (
-    // The section is the track and the window inside it is what sticks. No class
-    // of its own, because everything a track has — its height, its timeline —
-    // comes from the trigger; the only thing the page has to say about it is the
-    // space above it. The window's *content* is the one thing the trigger drives,
-    // which is why the rule beside it is marked [data-still]: furniture, held
-    // against the window rather than carried across it (triggers.css).
-    <section className={className} {...sceneAttrs(scenes.mentorStrip)}>
+    // The section is the track and the window inside it is what sticks. Its
+    // height and its timeline come from the trigger; what the trigger cannot
+    // know is how long the thing being panned is, so the one number this
+    // component hands the stylesheet is the number of people on the strip —
+    // .section spends it as the track's length. The window's *content* is the
+    // one thing the trigger drives, which is why the rule beside it is marked
+    // [data-still]: furniture, held against the window rather than carried
+    // across it (triggers.css).
+    <section
+      className={cx(styles.section, className)}
+      style={{ '--mentor-count': mentors.length }}
+      {...sceneAttrs(scenes.mentorStrip)}
+    >
       <div className={styles.window} data-pinned="">
         <div className={styles.track}>
           {/* First on the strip rather than fixed above it: the label introduces
@@ -80,16 +104,11 @@ export function MentorStrip({
                 <Text role="index" as="h3">
                   {mentor.name[locale]}
                 </Text>
-                <Text role="meta" className={styles.discipline}>
-                  {mentor.discipline[locale]}
-                </Text>
-                {/* The line the studio writes about each person, which until now
-                    was a required field on the record with nowhere on the site
-                    to appear. A face and a discipline is a contact sheet; the
-                    sentence is what makes the plate a caption. */}
-                <Text role="meta" className={styles.note}>
-                  {mentor.note[locale]}
-                </Text>
+                {/* Prose rather than Text, and that is the whole of the change
+                    on this side: the studio's own line breaks arrive inside the
+                    value, so the caption is as many lines as it wrote instead of
+                    the two fields this had room for. */}
+                <Prose role="meta" value={mentor.note[locale]} className={styles.note} />
               </figcaption>
             </figure>
           ))}

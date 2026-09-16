@@ -1,10 +1,11 @@
 /*
- * Four elements and each has exactly one job, which is what lets the trigger
+ * Five elements and each has exactly one job, which is what lets the trigger
  * own the motion and this file own only the shape:
  *
- *   the section  the track. Its height is the scroll the pan is spent over, and
- *                every bit of that comes from the trigger — which is why it has
- *                no class here at all.
+ *   .section     the track. Its height is the scroll the pan is spent over, and
+ *                the trigger is what spends it — but how much there is to spend
+ *                depends on how many people are on the strip, which is the one
+ *                thing the trigger cannot know. That is all this class says.
  *   .window      what sticks, and what `pan` measures itself against. The
  *                trigger makes it a container and clips it; this only centres
  *                its child and says what to do when there is no trigger.
@@ -17,6 +18,23 @@
  *                it is [data-still], so the scene's `pan` passes it by and it
  *                reads --pin itself.
  */
+
+/*
+ * How much scroll the figure costs, and it is the one measurement on the page
+ * that the content decides rather than this file.
+ *
+ * --pin-track used to be a flat 300svh for any pinned scene, which meant the
+ * strip was given the same two screens of scrub whether the studio had four
+ * mentors or twelve: adding a person made the pan faster, and losing one made
+ * the reader scroll a screen and a half past a row that had already finished
+ * moving. The travel is a plate each, so the track is too — one screen for the
+ * pin itself, and --strip-plate-scroll per person on the strip. The count is
+ * the only thing MentorStrip sets inline, because the count is the only part of
+ * this the admin can change.
+ */
+.section {
+  --pin-track: calc(100svh + var(--mentor-count) * var(--strip-plate-scroll));
+}
 
 .window {
   align-items: center;
@@ -102,11 +120,18 @@
  * height and therefore every portrait the same height — and therefore the
  * strip's horizon and the scroll rule positioned off it.
  *
- * Four of them: the name, the discipline, and two for the note. The first two
- * are short by content design and never wrap; the note is a sentence, so it is
- * given room for two lines and clamped rather than clipped — a sentence cut off
- * mid-word at the right edge reads as a bug, where one that fills two lines and
- * ends in an ellipsis reads as a caption.
+ * Four of them: the name, and three of the note. The name is short by content
+ * design and never wraps. The note is the studio's own prose and can be any
+ * number of lines — that is the point of it being one field rather than the two
+ * fixed ones it replaced — so the strip is what has to hold the shape, and it
+ * holds it by giving the note exactly --note-lines of room and clamping rather
+ * than clipping. A sentence cut off mid-word at the right edge reads as a bug;
+ * one that fills its lines and ends in an ellipsis reads as a caption.
+ *
+ * Three, because that is what the two fields drew between them — a discipline
+ * on one line and a sentence over two — so a strip written before this change
+ * looks exactly as it did. Nothing is hidden on a phone, where the plates are a
+ * column and there is no horizon to keep.
  */
 .caption {
   flex: 0 0 auto;
@@ -118,29 +143,31 @@
   white-space: nowrap;
 }
 
-.discipline {
-  color: var(--c-ink-70);
-}
-
 /*
- * Two lines, and the box is that tall whether or not the note fills it: a
- * caption that changes height with the length of its sentence changes the
- * height of the portrait above it, which is the one thing this file exists to
- * prevent.
+ * The box is --note-lines tall whether or not the note fills it: a caption that
+ * changes height with the length of its prose changes the height of the
+ * portrait above it, which is the one thing this file exists to prevent.
  *
  * Selected through .caption so it beats the single-line clip above it outright
- * rather than by being further down the file — the name and the discipline
- * still want that rule, and a tie settled by source order is a tie.
+ * rather than by being further down the file — the name still wants that rule,
+ * and a tie settled by source order is a tie.
  */
 .caption .note {
+  --note-lines: 3;
+
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  block-size: calc(
-    var(--type-meta-size) * (var(--type-meta-leading) + var(--type-lang-leading-add)) * 2
-  );
+  -webkit-line-clamp: var(--note-lines);
+  /* `lh` is the element's own line box, so the height and the clamp are the same
+     three lines by construction rather than by two calculations agreeing. It
+     used to multiply out --type-meta-size and its leading, which was the same
+     number for as long as this field was drawn at the meta role and nothing
+     else — and the studio can now set a size on the prose it writes here, at
+     which point a box measured off the role's size clips two lines of a larger
+     one down the middle. */
+  block-size: calc(var(--note-lines) * 1lh);
   color: var(--c-ink-70);
   display: -webkit-box;
-  line-clamp: 2;
+  line-clamp: var(--note-lines);
   margin-block-start: var(--space-3xs);
   white-space: normal;
 }
@@ -264,17 +291,22 @@
 }
 
 /*
- * Reduced motion. The trigger has already released the pin and un-clipped the
- * window; what is left is a row several screens wide with nowhere to go, so the
- * strip stops being a strip and becomes a gallery. Not a horizontal scroller:
- * that would be a scroll container a keyboard cannot always reach, offered to
- * exactly the readers least served by having to work for the content. Wrapped,
+ * The two readers who get the plates in flow instead of on a strip, and it is
+ * one arrangement because it is one situation: there is no pan to carry them.
+ *
+ * A phone, because triggers.css does not build a pinned scene below --bp-md —
+ * a window one plate wide is not a strip, it is a slot — and anyone who has
+ * asked for no motion, where the trigger has released the pin and un-clipped
+ * the window and what is left is a row several screens wide with nowhere to go.
+ * Either way the strip stops being a strip. Not a horizontal scroller: that
+ * would be a scroll container a keyboard cannot always reach, offered to
+ * exactly the readers least served by having to work for the content. In flow,
  * every plate is simply on the page. MOTION.md §9.
  */
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce), (width < 768px) {
   /* And the rule goes with the strip it measured. There is nothing left for it
-     to say once the plates are a wrapped gallery, and a thing whose entire
-     content is its travel says nothing standing still. MOTION.md §9. */
+     to say once the plates are on the page, and a thing whose entire content is
+     its travel says nothing standing still. MOTION.md §9. */
   .rule {
     display: none;
   }
@@ -288,5 +320,61 @@
     flex-wrap: wrap;
     padding-block: var(--space-l);
     row-gap: var(--space-l);
+  }
+}
+
+/*
+ * And on a phone it is a column, which is the whole of what a phone changes.
+ *
+ * Wrapping is what a wide screen does with the same plates, and at 390px it
+ * would put one 15rem plate per line with the rest of the width empty beside
+ * it. So the plates take the column instead — and with them go the two rules the
+ * strip needed and a column does not: the common horizon that held every
+ * portrait to the same height, and the caption held to four lines to keep it.
+ * Read down the page, each portrait keeps the shape the studio framed it at and
+ * each sentence is simply there, which is what the projects below it already do.
+ */
+@media (width < 768px) {
+  .track {
+    /* start, not centre: centring is what puts a row of plates in the middle of
+       a window, and in a column it would only take the label off the margin
+       every other line on the page is set to. */
+    align-items: start;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    /* The track is as wide as its contents everywhere else, and here its
+       contents are as wide as the track: a plate takes the column. Something
+       has to be the definite one, and on a phone it is the window's width. */
+    inline-size: 100%;
+    row-gap: var(--space-2xl);
+  }
+
+  .title {
+    padding-inline-end: 0;
+  }
+
+  .plate {
+    block-size: auto;
+    inline-size: 100%;
+  }
+
+  /* Back to --frame-ratio: nothing is holding a horizon any more, so the
+     portrait is sized by the shape it was given rather than by what the caption
+     left over. MediaFrame owns it again. */
+  .plate picture {
+    flex: 0 0 auto;
+  }
+
+  .caption > * {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  /* Whole. `display: block` is what takes the clamp off — a line limit only
+     means anything to a -webkit-box — and the height goes with it: down the
+     page there is no horizon for a long note to break. */
+  .caption .note {
+    block-size: auto;
+    display: block;
   }
 }

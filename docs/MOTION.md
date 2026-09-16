@@ -360,11 +360,30 @@ frames where the sticky child is stuck. Three hundred viewport-heights of track 
 hundred viewport-heights of scrub. Everything ScrollTrigger's pinning does, except that the
 browser does it on the compositor.
 
+The one number the sketch gets wrong is `300svh`. A pinned scene's track is how much scroll
+the figure costs, and where the thing being panned is a *list somebody edits* — the mentors
+are rows in the admin — a fixed track spends the same two screens on four plates as on
+twelve, so the pan gets faster with every person added. The filmstrip therefore states its
+own: one screen for the pin, plus `--strip-plate-scroll` per plate, which is
+`MentorStrip.module.css`'s `.section` and the only thing that component sets inline (the
+count). `--pin-track` stays as the default for a pinned scene whose content is fixed.
+
 Horizontal-under-vertical falls straight out of it:
 
 ```css
-@keyframes pan-track { to { transform: translate3d(calc(-100% + 100vw), 0, 0); } }
+@keyframes pan-track { to { transform: translate3d(min(0px, 100cqi - 100%), 0, 0); } }
 ```
+
+`min()` because the distance is only a distance while the strip is longer than its window.
+A strip that already fits has a *positive* `100cqi - 100%`, and the keyframe that reveals
+the far end of a long one would push a short one off to the right.
+
+And none of it below `--bp-md`. A pin with a pan is a reading turned on its side, and a
+window one plate wide is not a window: the figure becomes screens of vertical scrolling
+spent moving content sideways past a frame the width of a single portrait. So `triggers.css`
+builds `pin` and `pin-scrub` only from that width up — no track, no sticky window, no
+`--pin` — and the component lays its content out down the page instead, which is the same
+decision §9 makes under reduced motion, one width earlier.
 
 ### 5.3 The trigger vocabulary
 
@@ -376,8 +395,8 @@ zero bytes).
 |---|---|---|
 | `scrub` | `scrub: true` | `animation-timeline: view()`, `linear` |
 | `enter` | `toggleActions: play …` | `view()` + `animation-range: entry`, non-linear ease |
-| `pin` | `pin: true` | sticky child in a tall track |
-| `pin-scrub` | `pin` + `scrub` | above, `contain` range |
+| `pin` | `pin: true` | sticky child in a tall track; --bp-md up |
+| `pin-scrub` | `pin` + `scrub` | above, `contain` range; --bp-md up |
 | `stack` | `pin` down a list | per-entry track, sticky child, parts staggered on one timeline |
 | `link` | `trigger: A, animate B` | `view-timeline-name` + `timeline-scope` |
 | `progress` | document-level | `animation-timeline: scroll(root)` |
@@ -442,7 +461,7 @@ The rule is that every surface names a trigger. This table is the acceptance tes
 | work detail — meta panel | `link` to media | `dim` while a plate is centred |
 | work detail — pager | `progress` | `rise` over the last 15% |
 | programmes — each entry | `stack` | the entry's parts `slide` d2 in as it rises; `recede` as it hands off |
-| about — mentor filmstrip | `pin-scrub` + `pan` | horizontal filmstrip under vertical scroll |
+| about — mentor filmstrip | `pin-scrub` + `pan` | horizontal filmstrip under vertical scroll; a column on a phone |
 | about — the strip's rule | the same `--pin` | the margin rule turned on its side, drawn for the pin and no longer; §5.5d |
 | about — prose | `batch` | `split` d1 per paragraph |
 | about — project grid | `batch` | `rise` d1, staggered by column |
@@ -501,7 +520,9 @@ four photographs they can never reach. So the reduced-motion rules come in two h
 two files, and both are required: `effects.css` cancels the animations, `triggers.css`
 collapses the tracks, releases the sticky and un-clips the window. What the released content
 then *does* with the room is the component's decision — it is the only thing that knows
-whether its overflow was a strip, a column or a caption. The filmstrip wraps into a gallery;
+whether its overflow was a strip, a column or a caption. It is also the same arrangement a
+phone gets, where `triggers.css` never built the scene at all, so the component states it
+once for both. The filmstrip wraps into a gallery;
 it deliberately does not become a horizontal scroller, which would be a scroll container a
 keyboard cannot always reach, offered to exactly the readers least served by having to work
 for the content.
@@ -647,7 +668,9 @@ Two kinds need no fallback at all, for opposite reasons. `scrub`'s effects (`foc
 them is already showing the right picture doing nothing. `pin-scrub`'s fallback is
 structural, not a reveal: MentorStrip.module.css's plain, natively-scrollable `.window`
 (with a visible `scrollbar-color`/`-width`, or the row is a cut edge with no sign there is
-more) — the honest degradation the pinned filmstrip has no motion-based equivalent for.
+more) — the honest degradation the pinned filmstrip has no motion-based equivalent for. It
+is the desktop fallback only, because below `--bp-md` there is no strip to degrade: the
+plates are already a column, in flow, on every browser.
 
 ### 5.7 On GSAP
 

@@ -339,7 +339,6 @@ function parseMentors(value: unknown): Mentor[] {
     return {
       slug: slug(record.slug, `${at}.slug`),
       name: localised(record.name, `${at}.name`),
-      discipline: localised(record.discipline, `${at}.discipline`),
       note: localised(record.note, `${at}.note`),
       portrait: image(record.portrait, `${at}.portrait`),
     };

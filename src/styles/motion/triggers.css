@@ -97,36 +97,51 @@
    * is. overflow: clip, not hidden: `hidden` would make this a scroll container,
    * and a scroll container between the track and the viewport resolves the view
    * timeline above against the wrong scrollport.
+   *
+   * All of it is held back to --bp-md, which is more than `stack` holds back and
+   * for a stronger reason. A stack on a phone loses its pin and keeps its list:
+   * the entries are still a column read top to bottom. A pin *with a pan* is a
+   * reading turned on its side, and a phone is where that costs most and pays
+   * least — the window is about one plate wide, so the figure becomes screens of
+   * vertical scrolling spent moving content sideways past a frame barely wider
+   * than a single portrait, and a finger swiping down gets travel in a direction
+   * it did not ask for. Below this width the scene is simply not built: no
+   * track, no sticky window, and no --pin for anything to bind to, so the
+   * content is in flow and the component lays it out down the page — which is
+   * the same decision §9 already makes under reduced motion, taken for the same
+   * reason one width earlier (MentorStrip.module.css).
    */
-  [data-scene='pin'],
-  [data-scene='pin-scrub'] {
-    view-timeline-name: --pin;
-    view-timeline-axis: block;
-    block-size: var(--pin-track);
-  }
-  [data-scene='pin'] [data-pinned],
-  [data-scene='pin-scrub'] [data-pinned] {
-    position: sticky;
-    inset-block-start: var(--space-header);
-    block-size: calc(100svh - var(--space-header));
-    container-type: inline-size;
-    overflow: clip;
-  }
-  /*
-   * :not([data-still]) — a pinned window may also hold *furniture*: something
-   * positioned against the window rather than carried across it. The filmstrip's
-   * scroll rule is the one such thing today. Without the exclusion every child
-   * of the window inherits the scene's effect, so the rule would pan off the
-   * edge along with the strip it measures; with it, the convention this block
-   * relies on — the window's content is what moves — is stated rather than left
-   * to the component to keep by only ever rendering one child.
-   */
-  [data-scene='pin-scrub'] [data-pinned] > *:not([data-still]) {
-    animation-name: var(--eff-name);
-    animation-fill-mode: both;
-    animation-timing-function: linear;
-    animation-timeline: --pin;
-    animation-range: contain 0% contain 100%;
+  @media (width >= 768px) {
+    [data-scene='pin'],
+    [data-scene='pin-scrub'] {
+      view-timeline-name: --pin;
+      view-timeline-axis: block;
+      block-size: var(--pin-track);
+    }
+    [data-scene='pin'] [data-pinned],
+    [data-scene='pin-scrub'] [data-pinned] {
+      position: sticky;
+      inset-block-start: var(--space-header);
+      block-size: calc(100svh - var(--space-header));
+      container-type: inline-size;
+      overflow: clip;
+    }
+    /*
+     * :not([data-still]) — a pinned window may also hold *furniture*: something
+     * positioned against the window rather than carried across it. The
+     * filmstrip's scroll rule is the one such thing today. Without the exclusion
+     * every child of the window inherits the scene's effect, so the rule would
+     * pan off the edge along with the strip it measures; with it, the convention
+     * this block relies on — the window's content is what moves — is stated
+     * rather than left to the component to keep by only ever rendering one child.
+     */
+    [data-scene='pin-scrub'] [data-pinned] > *:not([data-still]) {
+      animation-name: var(--eff-name);
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+      animation-timeline: --pin;
+      animation-range: contain 0% contain 100%;
+    }
   }
 
   /*

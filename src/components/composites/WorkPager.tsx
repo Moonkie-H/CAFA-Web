@@ -14,8 +14,6 @@ interface WorkPagerProps {
   next: Work | null;
   labels: { previous: string; next: string };
   navLabel: string;
-  /** The site's footer note, which this block sets between the two links. */
-  note: string;
   className?: string;
 }
 
@@ -25,30 +23,23 @@ export function WorkPager({
   next,
   labels,
   navLabel,
-  note,
   className,
 }: WorkPagerProps) {
   return (
-    // data-page-close is a contract with SiteFooter, not decoration: this block
-    // draws the rule that closes a work page and carries the footer's own line
-    // between its two links, so the footer stands down entirely rather than
-    // repeating that line a screen further down.
-    //
-    // The note sits outside the <nav>, because a copyright line is not
-    // navigation — the grid is what puts it between the links, not the markup.
-    <div
-      className={cx(styles.close, className)}
-      data-page-close=""
+    // The way out of a work and nothing else. It used to carry the site's footer
+    // note between its two links and suppress the real footer, which made the
+    // one page on the site whose ending did not look like every other page's:
+    // five lines of address collapsed onto one, squeezed between two links that
+    // had a third of the room they were drawn for. The footer is the footer
+    // everywhere now, and this is two links.
+    <nav
+      aria-label={navLabel}
+      className={cx(styles.pager, className)}
       {...sceneAttrs(scenes.workPager)}
     >
-      <nav aria-label={navLabel} className={styles.steps}>
-        <Step locale={locale} work={previous} label={labels.previous} />
-        <Step locale={locale} work={next} label={labels.next} align="end" />
-      </nav>
-      <Text role="meta" className={styles.note}>
-        {note}
-      </Text>
-    </div>
+      <Step locale={locale} work={previous} label={labels.previous} />
+      <Step locale={locale} work={next} label={labels.next} align="end" />
+    </nav>
   );
 }
 

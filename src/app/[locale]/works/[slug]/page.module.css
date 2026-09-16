@@ -45,11 +45,8 @@
   view-transition-name: var(--vt-meta);
 }
 
-/* The rule the pager draws is the one that closes the page, and the site footer
-   stands down rather than drawing a second one --space-3xl further down
-   (SiteFooter.module.css). So the space above it is the space between a page and
-   its footer — and it is .page's row-gap above, nothing of the pager's own. The
-   pager used to add --space-xl to that gap as if it were setting it, which put
+/* The space above the pager's rule is .page's row-gap and nothing of the pager's
+   own. It used to add --space-xl to that gap as if it were setting it, which put
    --space-2xl and --space-xl end to end and left a screen of paper between the
    last photograph and the rule. */
 

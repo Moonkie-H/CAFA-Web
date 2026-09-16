@@ -114,7 +114,6 @@ export default async function WorkPage({ params }: WorkParams) {
         {...getWorkNeighbours(slug)}
         labels={dictionary.work}
         navLabel={dictionary.a11y.workPager}
-        note={dictionary.footer.note}
         className={styles.pager}
       />
     </Grid>
