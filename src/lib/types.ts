@@ -120,11 +120,22 @@ export interface Program {
   summary: LocalisedText;
 }
 
+/**
+ * One of the people on the band across About.
+ *
+ * Two pieces of writing and a photograph. The name is a heading — the plate's
+ * h3, and the record's title in the admin — and everything else the studio has
+ * to say about somebody is `note`: prose, with the line breaks it wrote. There
+ * used to be a `discipline` between them, a third field drawn as a third line,
+ * which was the form's shape imposed on a paragraph; the admin's
+ * 0013_mentor_note_is_prose.sql folded it into the note's first line, where the
+ * page was already drawing it.
+ */
 export interface Mentor {
   slug: string;
   name: LocalisedText;
-  discipline: LocalisedText;
-  note: LocalisedText; // exactly one line
+  /** Prose. However many lines the studio wrote — see MentorStrip. */
+  note: LocalisedText;
   portrait: ImageRef;
 }
 

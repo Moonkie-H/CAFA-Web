@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 
 import { Media } from '@/components/primitives/Media';
+import { Prose } from '@/components/primitives/Prose';
 import { Text } from '@/components/primitives/Text';
 import { scenes, sceneAttrs } from '@/lib/choreography';
 import { cx } from '@/lib/class-names';
@@ -45,9 +46,17 @@ interface MentorStripProps {
  * there, each portrait at the shape the studio framed it and each note whole.
  *
  * A face without a name is decoration, so every plate carries one: the portrait,
- * then who it is, what they work in, and the line the studio wrote about them.
- * That caption is the whole difference between this and a contact sheet, and it
- * is why the plate is a <figure>.
+ * then who it is, then whatever the studio wrote about them. That caption is the
+ * whole difference between this and a contact sheet, and it is why the plate is
+ * a <figure>.
+ *
+ * The name is a heading and the rest is prose — one field, not the three the
+ * record used to carry, so how many lines there are and where they break is
+ * written in the admin rather than fixed by this component. What the strip does
+ * hold is the *horizon*: every plate stands at the same height, so the caption
+ * is given a fixed four lines of it and the portrait takes the rest. Past four
+ * the band shows the opening of the note; the phone column, where there is no
+ * horizon to keep, shows all of it.
  *
  * It is not Gallery. That one is a full-bleed vertical column of photographs,
  * one at a time with a lot of paper between them; this is a single row of
@@ -95,16 +104,11 @@ export function MentorStrip({
                 <Text role="index" as="h3">
                   {mentor.name[locale]}
                 </Text>
-                <Text role="meta" className={styles.discipline}>
-                  {mentor.discipline[locale]}
-                </Text>
-                {/* The line the studio writes about each person, which until now
-                    was a required field on the record with nowhere on the site
-                    to appear. A face and a discipline is a contact sheet; the
-                    sentence is what makes the plate a caption. */}
-                <Text role="meta" className={styles.note}>
-                  {mentor.note[locale]}
-                </Text>
+                {/* Prose rather than Text, and that is the whole of the change
+                    on this side: the studio's own line breaks arrive inside the
+                    value, so the caption is as many lines as it wrote instead of
+                    the two fields this had room for. */}
+                <Prose role="meta" value={mentor.note[locale]} className={styles.note} />
               </figcaption>
             </figure>
           ))}
