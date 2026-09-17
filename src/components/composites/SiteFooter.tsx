@@ -14,6 +14,9 @@ export function SiteFooter({ dictionary }: SiteFooterProps) {
     // Full-bleed for the same reason as the header: the rule above it has to
     // reach the edges of the viewport, not the edges of the grid.
     //
+    // On home, programmes and about. The works pages close on their own rule and
+    // this one stands down under them — SiteFooter.module.css.
+    //
     // One centred line and nothing else. The address and the studio's email are
     // in the Contact card the nav pins over the page, which is the one place
     // they are asked for — repeating them along the bottom of every page was

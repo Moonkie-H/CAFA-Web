@@ -286,8 +286,9 @@ So:
 
 The dictionary is what is left after all of that: the words on the *chrome*. A page's
 title, its prose and the headings over its parts belong to that page; the pager on a work,
-the labels a screen reader hears, the contact card and the footer appear on every page and
-belong to none, so they stay copy.
+the labels a screen reader hears, the contact card and the footer's note belong to none of
+them, so they stay copy. The footer itself is drawn on every page but the works ones,
+which close on their own rule — §4 says how the page tells it so.
 
 ---
 
@@ -349,6 +350,15 @@ including the four states, is prerendered and passed in.
 - `app/[locale]/layout.tsx` exports
   `generateStaticParams: () => [{locale:'zh'}, {locale:'en'}]`, which covers every page
   nested under it.
+- **The footer stands down on the two works pages**, which close on their own rule — the
+  one under the index's last row, and the pager's. The block that draws it marks itself
+  `data-page-close`, and `SiteFooter.module.css` reads that off `<main>`, the footer's own
+  sibling: `main:has([data-page-close]) + .footer`. It is CSS rather than a layout choosing
+  what to render because a layout cannot read the route below it — and because the one
+  thing that can, a parallel-route slot, answers only on a fresh load: navigating out of
+  the works section without reloading leaves the slot on its last answer, and the footer
+  stays missing on About. A rule keyed on the page's own markup cannot fall out of step
+  with the page. `<main>` takes the closing space the footer used to leave under it.
 - The locale layout's `generateStaticParams` covers the four pages nested under it;
   `app/[locale]/works/[slug]/page.tsx` exports its own, producing the cross product of
   locales × published work slugs. Every page is pre-rendered.
