@@ -467,7 +467,7 @@ The rule is that every surface names a trigger. This table is the acceptance tes
 | about — project grid | `batch` | `rise` d1, staggered by column |
 | about — project cover | `scrub` | `focus` d1, nested inside the card |
 | contact | — | not a surface; an overlay pinned over one. §5.5b |
-| footer | `progress` | `rise` at document end |
+| footer | `progress` | `rise` at document end — on the pages that draw it; the works pages close on their own rule and the footer stands down |
 
 The contact row used to read `scrub` + `sway` d1 — a card pinned at its top edge, turning
 a fraction of a degree as the page moved under it — and it is the one row this table has

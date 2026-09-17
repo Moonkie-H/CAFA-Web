@@ -1,9 +1,10 @@
 /*
  * The way out of a work: previous at one end, next at the other, under the rule
- * that closes the work's own columns. The site footer follows it, exactly as it
- * follows every other page — this block used to carry the footer's note between
- * its two links and hide the real one, which gave the reader a different ending
- * on the one page where the ending is also the way onward.
+ * that closes the work's own columns — and closes the page, since the site
+ * footer stands down on a works page (SiteFooter.module.css). The space below
+ * this block is <main>'s there, not a margin this grid has to carry. It used to
+ * carry the footer's note between its two links as well, which gave the reader
+ * an ending squeezed into the middle third of the page.
  */
 .pager {
   border-block-start: var(--hairline);

@@ -99,10 +99,15 @@ export function WorkIndex({ locale, works, covers, statusLabels, listLabel }: Wo
       />
       {/* data-previewing is a plain attribute, not a module class, so the rule
           that dims the siblings can live in WorkIndexRow.module.css next to the
-          class it dims. */}
+          class it dims.
+
+          data-page-close is a contract with SiteFooter rather than decoration:
+          the rule under the last row is the rule that ends this page, so the
+          site footer stands down instead of drawing a second one below it. */}
       <ul
         aria-label={listLabel}
         className={styles.list}
+        data-page-close=""
         data-previewing={previewed === null ? undefined : ''}
         {...sceneAttrs(scenes.worksRows)}
       >

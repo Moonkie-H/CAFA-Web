@@ -26,15 +26,20 @@ export function WorkPager({
   className,
 }: WorkPagerProps) {
   return (
-    // The way out of a work and nothing else. It used to carry the site's footer
-    // note between its two links and suppress the real footer, which made the
-    // one page on the site whose ending did not look like every other page's:
-    // five lines of address collapsed onto one, squeezed between two links that
-    // had a third of the room they were drawn for. The footer is the footer
-    // everywhere now, and this is two links.
+    // The way out of a work and nothing else, and the end of the page with it:
+    // data-page-close is a contract with SiteFooter, not decoration — this block
+    // draws the rule that closes a work, so the site footer stands down rather
+    // than drawing a second one a screen below it.
+    //
+    // It used to carry the footer's note between its two links as well, which
+    // left five lines of address collapsed onto one and squeezed between two
+    // links that had a third of the room they were drawn for. The note is not
+    // here in any form now; it is in the contact card, where it is asked for,
+    // and this is two links.
     <nav
       aria-label={navLabel}
       className={cx(styles.pager, className)}
+      data-page-close=""
       {...sceneAttrs(scenes.workPager)}
     >
       <Step locale={locale} work={previous} label={labels.previous} />

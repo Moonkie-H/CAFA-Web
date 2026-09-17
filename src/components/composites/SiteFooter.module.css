@@ -4,6 +4,32 @@
   margin-block-start: var(--space-3xl);
 }
 
+/*
+ * The works pages close themselves, and this footer stands down under them.
+ *
+ * The index ends on the rule beneath its last row and a work ends on the
+ * pager's, so a second rule --space-3xl below either one — a screen of paper,
+ * then the studio's address again — gave those two pages an ending they had
+ * already had. The address is in the contact card the nav pins over the page,
+ * which is where it is asked for. Both blocks mark themselves with
+ * data-page-close, and <main> takes on the space the footer's own padding used
+ * to leave under the page, the phone's home indicator included, so the last
+ * rule ends the page instead of meeting the bottom of the screen.
+ *
+ * <main> and this <footer> are siblings, which is what makes this two selectors
+ * rather than a prop threaded through the layout for a page that does not own
+ * the footer. It is also why it is CSS at all: a layout cannot read the route
+ * below it, and a slot that could would answer only on a fresh load — the two
+ * would disagree the moment a reader left the works section without reloading.
+ */
+main:has([data-page-close]) {
+  padding-block-end: max(var(--space-l), env(safe-area-inset-bottom));
+}
+
+main:has([data-page-close]) + .footer {
+  display: none;
+}
+
 .inner {
   padding-block-start: var(--space-l);
   padding-block-end: max(var(--space-l), env(safe-area-inset-bottom));
